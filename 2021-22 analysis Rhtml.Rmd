@@ -809,6 +809,8 @@ Inv.stack.T.agg$Grouporder <- Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$G
 ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Group)) + geom_bar(stat="identity", colour = "black") + scale_fill_manual(values = c("gray86","gray75","gray58","gray30","#FFDEAD","#FFF68F","lavender","rosybrown1","plum2","#BCEE68","#66CD00","darkcyan","yellowgreen","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"))
 ```
 
+Need to remove rotifers and protozoans from richness.
+
 ```{r fig.align = 'center'}
 # Aggregate data by taxonomic group and sampling period for Lake Toolibin and produce stacked column plot of richness
 Inv.stack.TW <- Inv.stack.T
