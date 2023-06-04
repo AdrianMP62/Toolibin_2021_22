@@ -647,6 +647,7 @@ ggplot(data=comdataRT.h, aes(x=reorder(date, order), rich)) +
 
 # INVERTEBRATES
 
+## Multivariate analysis of composition
 ```{r include=FALSE}
 rawdata.I.orig <- t(read.csv("./Newdata/Invert matrix for analyses.csv", row.names = 1))
 rawdata.I <- rawdata.I.orig[1:30, ] #use only Toolibin-Walbyring data (exclude SPS sites)
@@ -656,7 +657,7 @@ Inv.fact <- Inv.fact.orig[1:30, ]
 rawdata.I[is.na(rawdata.I)]<-0 # replace na with 0
 ```
 
-## Multivariate analysis of composition
+
 
 ```{r include=FALSE}
 mds1.I <- metaMDS(rawdata.I, distance ="bray", k=2) #nMDS in 2 dimensions
@@ -780,9 +781,9 @@ Some other minor differences between sampling events include the absence
 of amphipods (1 species) in 2021-22, presence of annelids only in 2017
 (1 species) and presence of molluscs (1 species) only in 2021-22.
 
+##Load and format data
 ```{r}
 #create long file for aggregation in next chunks
-
 rawdata.IR.orig <- t(read.csv("./Newdata/Invert matrix for richness.csv", row.names = 1))
 rawdata.IR <- as.matrix(rawdata.IR.orig)
 Inv.stack <- as.data.frame(as.table(rawdata.IR))
@@ -794,6 +795,8 @@ Taxonomy3 <- read.csv("./Newdata/Taxonomy3.csv")
 colnames(Taxonomy3) <- c("Group", "Code", "LowestID")
 Inv.stack$Group <- Taxonomy3[match(Inv.stack$Code, Taxonomy3$Code), 1] #add invertebrate group to the data field to be used for stacking.
 Inv.stack$Presence <- as.numeric(Inv.stack$Presence)
+Inv.fact.orig <- read.csv("./Newdata/Invert factors.csv", row.names = 1)
+Inv.fact <- Inv.fact.orig[1:30, ]
 ```
 
 ```{r fig.align = 'center'}
@@ -801,17 +804,9 @@ Inv.stack$Presence <- as.numeric(Inv.stack$Presence)
 Inv.stack.T <- subset(Inv.stack, Wetland %in% "T") #create Toolibin only dataset
 Inv.stack.T.agg <- aggregate(data=Inv.stack.T, Presence ~ Sample + Group, FUN = "sum") #aggregate count data by species and survey
 Inv.fact$Period <- substr(row.names(Inv.fact), 4,6)
-Inv.stack.T.agg$Order <- Inv.fact[match(Inv.stack.T.agg$Sample, row.names(Inv.fact)), 3] #add in a variable for ordering the samples on the column plots- from the factor file.
-ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Group)) + geom_bar(stat="identity", colour = "black") + scale_fill_manual(values = c("#000000","#FF0000","#00FF00","#0000FF","#FF33CC", "#FFFF00","#00FFFF","#FF00FF","#808080","#800000","#808000","#008000","#800080","#000080","#C0C0C0"))
-
-
-ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Group)) + geom_bar(stat="identity", colour = "black") +  scale_fill_brewer(palette="Set3")
-
-
-
-
-
-
+Inv.stack.T.agg$Order <- Inv.fact[match(Inv.stack.T.agg$Sample, row.names(Inv.fact)), 4] #add in a variable for ordering the samples on the column plots- from the factor file.
+Inv.stack.T.agg$Grouporder <- Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2] #add in a variable for ordering the samples on the column plots- from the factor file.
+ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Group)) + geom_bar(stat="identity", colour = "black") + scale_fill_manual(values = c("gray86","gray75","gray58","gray30","#FFDEAD","#FFF68F","lavender","rosybrown1","plum2","#BCEE68","#66CD00","darkcyan","yellowgreen","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"))
 ```
 
 ```{r fig.align = 'center'}
@@ -824,6 +819,9 @@ Inv.stack.TW.agg$Presence <- replace(Inv.stack.TW.agg$Presence, Inv.stack.TW.agg
 Inv.stack.TW.agg2 <- aggregate(data=Inv.stack.TW.agg, Presence ~ Period + Group, FUN = "sum") #aggregate count data by species and survey
 Inv.stack.TW.agg2$Order <- Inv.fact[match(Inv.stack.TW.agg2$Period, Inv.fact$Period), 3] #add in a variable for ordering the samples on the column plots- from the factor file.
 ggplot(Inv.stack.TW.agg2, aes(x=reorder(Period, Order), y=Presence, fill=Group)) + geom_bar(stat="identity", colour = "black") + scale_fill_manual(values = c("#000000","#FF0000","#00FF00","#0000FF","#0099CC", "#FFFF00","#00FFFF","#FF00FF","#808080","#800000","#808000","#008000","#800080","#000080","#C0C0C0"))
+
+#to change order of fills in a stack:
+fill = factor(Group, levels=c("Protozoans", "r", "f"))
 ```
 
 The next two plots are show per sample and per wetland richness for Lake
