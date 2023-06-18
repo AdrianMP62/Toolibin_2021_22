@@ -657,8 +657,6 @@ Inv.fact <- Inv.fact.orig[1:30, ]
 rawdata.I[is.na(rawdata.I)]<-0 # replace na with 0
 ```
 
-
-
 ```{r include=FALSE}
 mds1.I <- metaMDS(rawdata.I, distance ="bray", k=2) #nMDS in 2 dimensions
 #Extract mds2 coordinates and create new dataframe with coordinates, survey, and survey period
@@ -792,7 +790,7 @@ Inv.stack$Wetland <- substr(Inv.stack$Sample, 1, 1) #create new variable for wet
 Inv.stack$Period <- substr(Inv.stack$Sample, 4,6) #create new variable for survey period
 Inv.stack$Sample <-gsub("[.]", "-", Inv.stack$Sample) #convert dot in sample names to a dash for consistency between files (the dots are created on sample import).
 Taxonomy3 <- read.csv("./Newdata/Taxonomy3.csv")
-colnames(Taxonomy3) <- c("Group", "Code", "LowestID")
+colnames(Taxonomy3) <- c("Group", "Group.order", "Code", "LowestID")
 Inv.stack$Group <- Taxonomy3[match(Inv.stack$Code, Taxonomy3$Code), 1] #add invertebrate group to the data field to be used for stacking.
 Inv.stack$Presence <- as.numeric(Inv.stack$Presence)
 Inv.fact.orig <- read.csv("./Newdata/Invert factors.csv", row.names = 1)
@@ -805,8 +803,14 @@ Inv.stack.T <- subset(Inv.stack, Wetland %in% "T") #create Toolibin only dataset
 Inv.stack.T.agg <- aggregate(data=Inv.stack.T, Presence ~ Sample + Group, FUN = "sum") #aggregate count data by species and survey
 Inv.fact$Period <- substr(row.names(Inv.fact), 4,6)
 Inv.stack.T.agg$Order <- Inv.fact[match(Inv.stack.T.agg$Sample, row.names(Inv.fact)), 4] #add in a variable for ordering the samples on the column plots- from the factor file.
-Inv.stack.T.agg$Grouporder <- Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2] #add in a variable for ordering the samples on the column plots- from the factor file.
-ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Group)) + geom_bar(stat="identity", colour = "black") + scale_fill_manual(values = c("gray86","gray75","gray58","gray30","#FFDEAD","#FFF68F","lavender","rosybrown1","plum2","#BCEE68","#66CD00","darkcyan","yellowgreen","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"))
+Inv.stack.T.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
+Inv.stack.T.agg < setorder(Inv.stack.T.agg, cols = "Grouporder") #order by taxonomic group
+Inv.stack.T.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
+Inv.stack.T.agg <- Inv.stack.T.agg[Inv.stack.T.agg$Group  != "Rotifers", ]     # remove rotifers
+ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporder))  + geom_bar(stat="identity", colour = "black") + scale_fill_manual(values = c("gray86","gray75","gray58","gray30","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","yellowgreen","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('protozoans','hydrozoans','turbellarians','nematoda','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies'))
+
+
+
 ```
 
 Need to remove rotifers and protozoans from richness.
