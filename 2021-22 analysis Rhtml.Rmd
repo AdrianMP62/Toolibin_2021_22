@@ -817,9 +817,6 @@ ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporde
   theme(axis.text.x=element_text(angle = -90, hjust = 0)) +
   theme(axis.title.y = element_text(vjust = +2.5)) +
   theme(legend.title=element_blank())
-
-
-
 ```
 
 Need to remove rotifers and protozoans from richness.
