@@ -807,7 +807,16 @@ Inv.stack.T.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.agg$Group, T
 Inv.stack.T.agg < setorder(Inv.stack.T.agg, cols = "Grouporder") #order by taxonomic group
 Inv.stack.T.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
 Inv.stack.T.agg <- Inv.stack.T.agg[Inv.stack.T.agg$Group  != "Rotifers", ]     # remove rotifers
-ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporder))  + geom_bar(stat="identity", colour = "black") + scale_fill_manual(values = c("gray86","gray75","gray58","gray30","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","yellowgreen","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('protozoans','hydrozoans','turbellarians','nematoda','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies'))
+ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporder)) + 
+  geom_bar(stat="identity", colour = "black") +
+  scale_fill_manual(values = c("gray86","gray75","gray58","gray30","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","yellowgreen","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('protozoans','hydrozoans','turbellarians','nematoda','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
+  xlab("Site-date") +
+  ylab("Number of invertebrate species") + 
+  theme(axis.text = element_text(size = 12)) + 
+  theme(axis.title = element_text(size = 15)) +
+  theme(axis.text.x=element_text(angle = -90, hjust = 0)) +
+  theme(axis.title.y = element_text(vjust = +2.5)) +
+  theme(legend.title=element_blank())
 
 
 
