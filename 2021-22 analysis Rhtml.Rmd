@@ -801,15 +801,15 @@ Inv.fact <- Inv.fact.orig[1:30, ]
 # Aggregate data by taxonomic group and sample for just Lake Toolibin and produce a stacked column plot
 Inv.stack.T <- subset(Inv.stack, Wetland %in% "T") #create Toolibin only dataset
 Inv.stack.T.agg <- aggregate(data=Inv.stack.T, Presence ~ Sample + Group, FUN = "sum") #aggregate count data by species and survey
+Inv.stack.T.agg <- Inv.stack.T.agg[!(Inv.stack.T.agg$Group=="Leeches" | Inv.stack.T.agg$Group=="Nematodes"),]
 Inv.fact$Period <- substr(row.names(Inv.fact), 4,6)
 Inv.stack.T.agg$Order <- Inv.fact[match(Inv.stack.T.agg$Sample, row.names(Inv.fact)), 4] #add in a variable for ordering the samples on the column plots- from the factor file.
 Inv.stack.T.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
 Inv.stack.T.agg < setorder(Inv.stack.T.agg, cols = "Grouporder") #order by taxonomic group
 Inv.stack.T.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
-Inv.stack.T.agg <- Inv.stack.T.agg[Inv.stack.T.agg$Group  != "Rotifers", ]     # remove rotifers
 ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporder)) + 
   geom_bar(stat="identity", colour = "black") +
-  scale_fill_manual(values = c("gray86","gray75","gray58","gray30","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","yellowgreen","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('protozoans','hydrozoans','turbellarians','nematoda','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
+  scale_fill_manual(values = c("gray75","gray58","gray30","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","yellowgreen","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('hydrozoans','turbellarians','snails','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
   xlab("Site-date") +
   ylab("Number of invertebrate species") + 
   theme(axis.text = element_text(size = 12)) + 
