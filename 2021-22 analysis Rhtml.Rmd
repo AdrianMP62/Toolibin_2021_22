@@ -1,0 +1,1114 @@
+---
+title: "EXPLORATORY ANALYSES OF TOOLIBIN AND WALBYRING WATERBIRD COUNTS and INVERTEBRATES INCLUDING 2021-22"
+author: "Adrian Pinder"
+date: 'Date and time: `r Sys.time()`'
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+    number_sections: yes
+    toc_float: yes
+editor_options:
+  chunk_output_type: console
+  markdown: 
+    wrap: 72
+---
+
+```{r, echo=FALSE, include = FALSE}
+packages <- c("RColorBrewer","stringr","rstudioapi","patchwork","glue","ClassDiscovery","vegan","tidyverse","lubridate","ggplot2","ggpubr","stringi","factoextra", "zoo","cluster","rgl","reshape2","ggthemes","data.table")
+lapply(packages, require, character.only=TRUE)
+```
+
+Software: Rstudio version: `r rstudioapi::versionInfo()$version`; R
+version: `r getRversion()`
+
+```{r echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(error = TRUE)
+options(scipen=999)
+set.seed(12345)
+```
+
+# Background
+
+Lake Toolibin filled in winter 2021 from rainfall in July/August.
+Surveys of waterbirds were undertaken across almost all of Lake Toolibin
+and the downstream Lake Walbyring on Nov 1 and 2 2021 (3 months after
+filling) and 10-11 Jan 2022 (4.5 months after filling) by boat or (for
+Jan 2022 at Walbyring) on foot by traversing the perimeter of the lake.
+Invertebrate surveys were undertaken at the same time using the methods
+of Cale and Pinder (2019).
+
+Cale and Pinder (2019) analysed patterns in waterbird composition from
+1) the 1980s (Jaensch et al., 1985), a survey undertaken in 1996 by
+Halse <i>et al.</i> (2000) and two 2017 surveys following a summer fill
+event commencing 9 February 2017. They also analysed invertebrate data
+collected from both lakes in 1992 (Doupe and Horwitz, 1995), 1996 (Halse
+<i>et al.</i>, 2000) and 2017. This report extends the Cale and Pinder
+(2019) analyses of waterbirds and invertebrates to include the 2021/22
+data.
+
+
+
+# Waterbird Analyses
+
+The waterbird data input files include depth at time of survey, visit
+date, period (1980s, 1996, 2017 and 2021/22), an indication
+(ALL_SPECIES) of whether the observers thought they had adequately
+surveyed the whole of the lake and seen all species, and species
+richness.
+
+```{r}
+rawdata <- read.csv("./Data/Allsurveys18.csv", row.names = 1) #retain 'rawdata' as an unmodified waterbird import
+rawdata$VISIT_DATE <- as.Date(rawdata$VISIT_DATE, "%d/%m/%Y") #convert waterbird survey date to R date format
+```
+
+Data format:
+
+```{r}
+rawdata[1:5, 1:7]
+```
+
+##Column plots for richness - using only survey dates where observers
+thought all species counted and depth \>=0.3m
+
+```{r}
+rawdata2 <- rawdata
+rawdata2$wetland <- row.names(rawdata2)
+rawdata2$wetland <- str_sub(rawdata2$wetland,1,1)
+rawdata2 <- filter(rawdata2, ALL_SPECIES == "A" & DEPTH > 0.299 & wetland == "T")
+rawdata2$order <- 1:nrow(rawdata2) 
+rawdata2$date2 <- format(rawdata2$VISIT_DATE, "%h-%Y")
+dates <- as.factor(rawdata2$date2)
+ggplot(data = rawdata2) + geom_col(mapping = aes(x=reorder(date2, order), y = RICHNESS, fill = Period)) + xlab("Survey") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold"))
+```
+
+##scatterplots by period with colour dem=noting whether all species
+likely observed
+
+```{r}
+rawdata3 <- rawdata
+rawdata3$wetland <- row.names(rawdata3)
+rawdata3$wetland <- str_sub(rawdata3$wetland,1,1)
+
+#Toolibin scatterplot
+rawdata3.T <- filter(rawdata3, wetland == "T")
+rawdata3.T$Depthcat <- if_else(rawdata3.T$DEPTH >0.3, "D", "S")
+rawdata3.T$colour <- paste(rawdata3.T$ALL_SPECIES, rawdata3.T$Depthcat)
+rawdata3.T$colour <- if_else(rawdata3.T$colour == "A D", "AD", "OT")
+ggplot(data = rawdata3.T, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colour = colour, alpha = 0.2), size=8, width = 0.05, height = 0.05) + xlab("Period") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(legend.position="none")
+
+#Toolibin species accumulation for 1975+1980s with all surveys - NEED TO REPEAT WITH JUST DEPTH >0.3M
+rawdata.T.SA <- rawdata3.T
+rawdata.T.SA <- rawdata.T.SA[, -c(1:5,48:50)]
+rawdata.T.SA <- rawdata.T.SA[-grep("TM", rownames(rawdata.T.SA)), ]
+rawdata.T.SA <- rawdata.T.SA %>% replace(is.na(.), 0)
+rawdata.T.SA <-as.data.frame(rawdata.T.SA)
+rawdata.T.SA[] <- lapply(rawdata.T.SA, as.numeric)
+Tool.SA <- specaccum(rawdata.T.SA, "random", permutations = 100)
+plot(Tool.SA)
+
+#Toolibin species accumulation for 1975+1980s with all surveys - NEED TO REPEAT WITH JUST DEPTH >0.3M
+rawdata.T.SA2 <- rawdata3.T
+rawdata.T.SA2 <- rawdata.T.SA2[rawdata.T.SA2$colour == "AD", ]
+rawdata.T.SA2 <- rawdata.T.SA2[, -c(1:5,48:50)]
+rawdata.T.SA2 <- rawdata.T.SA2[-grep("TM", rownames(rawdata.T.SA2)), ]
+rawdata.T.SA2 <- rawdata.T.SA2 %>% replace(is.na(.), 0)
+rawdata.T.SA2 <-as.data.frame(rawdata.T.SA2)
+rawdata.T.SA2[] <- lapply(rawdata.T.SA2, as.numeric)
+Tool.SA2 <- specaccum(rawdata.T.SA2, "random", permutations = 100)
+plot(Tool.SA2)
+
+
+
+#Toolibin species accumulation for 1975+1980s with only 'A' surveys
+rawdata.T.A.SA <- filter(rawdata3.T, ALL_SPECIES == "A")
+rawdata.T.A.SA <- rawdata.T.A.SA[, -c(1:5,48)]
+rawdata.T.A.SA <- rawdata.T.A.SA[-grep("TM", rownames(rawdata.T.A.SA)), ]
+rawdata.T.A.SA <- rawdata.T.A.SA %>% replace(is.na(.), 0)
+rawdata.T.A.SA <-as.data.frame(rawdata.T.A.SA)
+rawdata.T.A.SA[] <- lapply(rawdata.T.A.SA, as.numeric)
+Tool.SA <- specaccum(rawdata.T.A.SA, "random", permutations = 100)
+plot(Tool.SA)
+
+#Walbyring
+rawdata3.W <- filter(rawdata3, wetland == "W")
+ggplot(data = rawdata3.W, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colour = ALL_SPECIES, alpha = 0.2), size=8, width = 0.05, height = 0.05) + xlab("Period") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(legend.position="none")
+
+```
+
+All multivariate analyses are performed on Helinger transformed
+abundance data (within species abundances scaled to values between 0 and
+1 and square root transformed).
+
+## Analyses including all surveys (from both lakes) with richness \>1 ( to remove an outlier identified in the 2019 analyses)
+
+```{r}
+comdata <- subset(rawdata, RICHNESS > 1)# select= VISIT_DATE:YBSPOONBILL)#SHOVELER:YBSPOONBILL
+comdata.fact <- comdata[, 1:5] #create file with factors
+comdata.fact$Survey <- row.names(comdata.fact)
+comdata <- comdata[, -(1:5)] #remove factors from data file
+comdata[1:5, 1:5] #check first five lines & columns of data file
+comdata[is.na(comdata)]<-0 # replace na with 0
+comdata.pa<-decostand(comdata,"pa") #create presence/absence matrix
+comdata.hel<-decostand(comdata,"hellinger") # create helinger transformed matrix
+```
+
+```{r include=FALSE}
+mds1 <- metaMDS(comdata.hel, distance ="bray", k=2) #nMDS in 2 dimensions
+```
+
+```{r include=FALSE}
+mds2 <- metaMDS(comdata.hel, distance = "bray", k=3) #nMDS in 3 dimensions
+```
+
+A two-dimensional ordination had unacceptably high stress value
+(`r round(mds1$stress, digits=2)`) so a 3 dimensional ordination was run
+with stress `r round(mds2$stress, digits=2)`
+
+```{r}
+#Extract mds2 coordinates and create new dataframe with coordinates, survey, and survey period
+mds2.pts <- as.data.frame(mds2$points) #extract 2D ordination coordinates (points)
+mds2.pts$Survey <- row.names(mds2.pts)
+mds2.pts$Period <- comdata.fact[match(mds2.pts$Survey, comdata.fact$Survey), 2] #column '2' has 'Period'
+```
+
+Below is a plot of axes 1 v 2 of the 3D ordination, showing all of the
+1996 to 2022 surveys on the edge of the 1980s surveys.
+
+```{r fig.align = 'center'}
+#first set axis limits based on maximum values of coordinates
+Xmin <- min(mds2.pts$MDS1)*1.2 
+Xmax <- max(mds2.pts$MDS1)*1.2
+Ymin <- min(mds2.pts$MDS2)*1.2
+Ymax <- max(mds2.pts$MDS2)*1.2
+ggplot(mds2.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period), size=5) + coord_fixed(ratio = 1)
+```
+
+<!-- Analyses including only surveys where 1) observers believed they had counted all birds present (All_SPECIES = A), depth > 0 and  richness >1 -->
+
+```{r eval = FALSE}
+comdataA <- rawdata[rawdata$ALL_SPECIES=="A" & rawdata$DEPTH > 0, ]
+comdataA.fact <- comdataA[, 1:5] #seperate out factors
+comdataA.fact$Survey <- row.names(comdataA.fact)
+comdataA <- comdataA[, -(1:5)] #remove factors from data file
+comdataA[is.na(comdataA)]<-0 # replace na with 0
+comdataA.pa<-decostand(comdataA,"pa") #create presence/absence matrix
+comdataA.hel<-decostand(comdataA,"hellinger") # create helinger transformed matrix
+```
+
+<!-- 3D ordination of heliger transformed data -->
+
+```{r eval = FALSE}
+mds3<-metaMDS(comdataA.hel,distance="bray", k=3) #nMDS in 3 dimensions
+```
+
+```{r eval = FALSE}
+mds3.pts <- as.data.frame(mds3$points) #extract 2D ordination coordinates (points)
+mds3.pts$Survey <- row.names(mds3.pts) #use survey period as row.names
+#extract Period and depth as variables for use in ordination plot
+mds3.pts$Period <- comdataA.fact[match(mds3.pts$Survey, comdataA.fact$Survey), 2] 
+mds3.pts$Depth <- comdataA.fact[match(mds3.pts$Survey, comdataA.fact$Survey), 4]
+```
+
+```{r fig.align = 'center'}
+Xmin <- min(mds3.pts$MDS1)*1.2
+Xmax <- max(mds3.pts$MDS1)*1.2
+Ymin <- min(mds3.pts$MDS2)*1.2
+Ymax <- max(mds3.pts$MDS2)*1.2
+ggplot(mds3.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period, size=Depth^2)) + coord_fixed(ratio = 1), size=3, vjust=1, hjust=1.3)
+```
+
+<!-- cluster analysis and contingency table -->
+
+```{r eval = FALSE}
+plot(comdataA.upgma <- hclust(vegdist(comdataA.hel), method="aver"), hang=1)
+tabasco(comdataA.hel,comdataA.upgma)
+```
+
+Very few of the surveys undertaken in the 1980s were believed by the
+observers to be complete counts or even that all species had been seen.
+The 1996 to 2022 surveys were all undertaken by boat and, while these
+still did not cover 100% of the lake, the surveys were relatively
+comprehensive. To try to account for this difference in effort and
+conditions, the next analyses use only surveys where at least 10 species
+were seen (indicating a reasonable survey effort) and depth was moderate
+to high (\>0.3m).
+
+## Analyses with surveys that recorded 10 or more species and depth \>0.3m
+
+```{r}
+comdataR <- rawdata[rawdata$RICHNESS > 9 & rawdata$DEPTH > 0.3, ]
+comdataR.fact <- comdataR[, 1:5] #extract factors
+comdataR.fact$Period.col <- comdataR.fact$Period
+comdataR.fact$Period.col <- gsub('1980s', 'grey', comdataR.fact$Period.col)
+comdataR.fact$Period.col <- gsub("1996|2017|2021-22", 'red', comdataR.fact$Period.col)
+comdataR.fact$Survey <- row.names(comdataR.fact) #create column for survey name
+comdataR.fact$lake <- substr(rownames(comdataR.fact), 1, 1) #create factor for lake by using first letter of survey name
+comdataR.fact$YM <- format(as.Date(comdataR.fact$VISIT_DATE), "%m-%y") #create factor for year-month to use as labels
+comdataR <- comdataR[, -(1:5)] #remove factors from data file
+comdataR[is.na(comdataR)]<-0 # replace na with 0
+comdataR <- comdataR[, colSums(comdataR) != 0] #remove species not present in any surveys
+comdataR.pa<-decostand(comdataR,"pa") #create presence/absence matrix
+comdataR.hel<-decostand(comdataR,"hellinger") # create helinger transformed matrix
+```
+
+```{r include=FALSE}
+mds4<-metaMDS(comdataR.hel, distance="bray", k=3) #nMDS in 3 dimensions
+```
+
+```{r}
+mds4.pts <- as.data.frame(mds4$points) #extract 2D ordination coordinates (points)
+mds4.pts$Survey <- row.names(mds4.pts) #use survey period as row.names
+mds4.pts$Period <- comdataR.fact[match(mds4.pts$Survey, comdataR.fact$Survey), 2]
+mds4.pts$Depth <- comdataR.fact[match(mds4.pts$Survey, comdataR.fact$Survey), 4]
+```
+
+Plot of axes 1 v 2 of 3D ordination (stress =
+`r round(mds4$stress, digits=2)`) with symbols scaled by depth.
+
+```{r fig.align = 'center'}
+Xmin <- min(mds4.pts$MDS1)*1.2
+Xmax <- max(mds4.pts$MDS1)*1.2
+Ymin <- min(mds4.pts$MDS2)*1.2
+Ymax <- max(mds4.pts$MDS2)*1.2
+ggplot(mds4.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period, size=Depth^2)) + coord_fixed(ratio = 1)
+```
+
+There is not a clear pattern here of composition being related to depth.
+The plot still shows all of the 1996-2022 surveys in one part of the
+ordination and on the edge of the 1980s surveys, but not clearly
+separated from them.
+
+To better understand how the 1980s and 1996-2022 surveys compare, a
+K-means cluster was undertaken. This method groups surveys into clusters
+without imposing a hierarchical structure. First use methods to
+determine the optimal number of clusters.
+
+Method 1: Elbow plot. Optimal number of groups should be where the slope
+changes
+
+```{r fig.width=4, fig.height=4, fig.align = 'center'}
+fviz_nbclust(comdataR.hel, kmeans, method = "wss")
+```
+
+This doesnt give much of an indication of the optimal number of plots
+but there is a larger change of slope at 6.
+
+Method 2: gap statistic plot. Optimal number of groups is indicated by
+the first peak in the gap statistic value
+
+```{r echo=FALSE, fig.width=4, fig.height=4, fig.align='center'}
+gap_stat <- clusGap(comdataR.hel,
+                    FUN = kmeans,
+                    nstart = 25,
+                    K.max = 10,
+                    B = 50)
+fviz_gap_stat(gap_stat)
+```
+
+This also doesnt provide much help in determining number of groups as a
+peak isnt reached within the first 10 groups.
+
+A classic 'rule of thumb' upper bound to number of cluster groups (k) is
+square root of the number of samples (=surveys). sqrt(45) = 6.7
+
+Irrespective of the number of groups, the 1996 to 2022 surveys did not
+all group together. The closest was a 6 group classification where
+almost all of the 1996 to 2022 surveys end up in one cluster group (the
+exception being the April 2017 survey at Walbyring), grouping with a
+similar number of 1980s surveys.
+
+The previous ordination overlain with the 6 kmeans groups shows the 1996
+to 2022 grouping with some 1980s surveys.
+
+```{r fig.width=4, fig.height=4, fig.align='center'}
+#run kmeans with k=6
+comdataR.km <- kmeans(comdataR.hel, 6, nstart = 25)
+kmgrps <- as.data.frame(comdataR.km$cluster) #extract cluster groups and convert to dataframe format
+names(kmgrps) <- "kmgrps" #change name of imported group column
+comdataR.fact$kmgrps <- as.character(kmgrps$kmgrps) #add groups to a factor table for plotting and convert to character format
+```
+
+```{r fig.align = 'center'}
+Xmin <- min(mds4.pts$MDS1)*1.2
+Xmax <- max(mds4.pts$MDS1)*1.2
+Ymin <- min(mds4.pts$MDS2)*1.2
+Ymax <- max(mds4.pts$MDS2)*1.2
+ggplot(mds4.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=comdataR.fact$kmgrps), size=6, alpha = 0.5) + coord_fixed(ratio = 1) + geom_text(aes(label=comdataR.fact$YM), size=2, vjust=1, hjust=1.3)
+```
+
+<!-- A hierarchical cluster analysis was also run. In this plot the 1996 to 2022 surveys are labelled in red. All of these except for the April 2017 surveys for Walbyring and Toolibin clustered in one group, along with some of the 1980s surveys carried out in July to November. The two April 2017 surveys clustered with two May-Jul surveys from the 1980s. -->
+
+<!-- ```{r echo = FALSE} -->
+
+<!-- comdataR.dist<-vegdist(comdataR.hel) -->
+
+<!-- comdataR.upgma <- hclust(comdataR.dist, method="aver") -->
+
+<!-- #plot(comdataR.upgma, hang=-1) -->
+
+<!-- plotColoredClusters(comdataR.upgma, comdataR.fact$VISIT_DATE, comdataR.fact$Period.col, cex = 0.8, main = "", line = 0) -->
+
+<!-- ``` -->
+
+<!-- This plot shows the same cluster diagram with the kmeans group containing most of the 1996 to 2022 surveys highlighted. -->
+
+<!-- <!-- (note need to change the k number in the code below (line 3) -->
+
+--\> <!-- ```{r echo=FALSE} -->
+<!-- comdataR.fact$kmgrpscol <- comdataR.fact$kmgrps -->
+<!-- comdataR.fact$kmgrpscol <- gsub("1|2|4|3|6", "grey", comdataR.fact$kmgrpscol) -->
+<!-- comdataR.fact$kmgrpscol <- gsub("5", "blue", comdataR.fact$kmgrpscol) -->
+<!-- plotColoredClusters(comdataR.upgma, comdataR.fact$VISIT_DATE, comdataR.fact$kmgrpscol, cex = 0.8, main = "", line = 0) -->
+<!-- ``` -->
+
+## Analyses with only Lake Toolibin data with depth\>0.3m and richness 10+
+
+When just the Toolibin Surveys are considered, an ordination plot still
+shows the 1996 to 2022 surveys on the edge of the 1980s point cloud.
+
+```{r}
+comdataRT <- rawdata[rawdata$RICHNESS > 9 & rawdata$DEPTH > 0.3, ]
+comdataRT[is.na(comdataRT)]<-0 # replace na with 0
+comdataRT <- comdataRT[grep("^T", row.names(comdataRT)),] #extracts Toolibin
+comdataRT.fact <- comdataRT[, 1:5]
+comdataRT.fact$Survey <- row.names(comdataRT.fact)
+comdataRT.fact$YM <- format(as.Date(comdataRT.fact$VISIT_DATE), "%m-%y")
+comdataRT <- comdataRT[, -(1:5)] #remove factors from data file
+comdataRT <- comdataRT[, colSums(comdataRT) != 0]
+comdataRT.pa<-decostand(comdataRT,"pa") #create presence/absence matrix
+comdataRT.hel<-decostand(comdataRT,"hellinger") # create helinger transformed matrix
+comdataRT.sqrt <- sqrt(comdataRT)
+```
+
+```{r include=FALSE}
+mds5<-metaMDS(comdataRT.hel, distance="bray", k=3) #nMDS in 3 dimensions
+```
+
+```{r}
+#Extract mds points and add factors
+  mds5.pts <- as.data.frame(mds5$points) #extract 2D ordination coordinates (points)
+  mds5.pts$Survey <- row.names(comdataRT.fact) #use survey period as row.names
+  mds5.pts$YM <- comdataRT.fact$YM #add YearMonth for labelling
+  mds5.pts$Period <- comdataRT.fact$Period
+  mds5.pts$Depth <- comdataRT.fact$DEPTH
+  #mds5.pts$Period <- comdataRT.fact[match(row.names(mds5.pts), row.names(comdataRT.fact)), 2]
+  #mds5.pts$Depth <- comdataRT.fact[match(row.names(mds5.pts), row.names(comdataRT.fact)), 4]
+```
+
+Axes 1 v 2 of a 3D ordination with stress
+`r round(mds5$stress, digits=3)` showing the 1 x 1996, 2 x 2017 and 2 x
+2021-22 surveys on the edge of the 1980s surveys.
+
+```{r fig.align = 'center'}
+Xmin <- min(mds5.pts$MDS1)*1.2
+Xmax <- max(mds5.pts$MDS1)*1.2
+Ymin <- min(mds5.pts$MDS2)*1.2
+Ymax <- max(mds5.pts$MDS2)*1.2
+ggplot(mds5.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period), size=6, alpha=0.5) + coord_fixed(ratio = 1) + geom_text(aes(label=YM), size=3, vjust=1, hjust=1.3)
+```
+
+<!-- Plot mds5 ordination with points coloured by Period -->
+
+<!-- ```{r echo=FALSE} -->
+
+<!-- comdataRT.fact$Period_Col <- comdataRT.fact$Period -->
+
+<!-- comdataRT.fact$Period_Col <- gsub('1980s', 'grey', comdataRT.fact$Period_Col) -->
+
+<!-- comdataRT.fact$Period_Col <- gsub('1996', 'red', comdataRT.fact$Period_Col) -->
+
+<!-- comdataRT.fact$Period_Col <- gsub('2017', 'blue', comdataRT.fact$Period_Col) -->
+
+<!-- comdataRT.fact$Period_Col <- gsub('2021-22', 'green', comdataRT.fact$Period_Col) -->
+
+<!-- Period.Col <- comdataRT.fact$Period_Col -->
+
+<!-- ggplot(mds5.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=comdataRT.fact$Period), size=7, alpha=0.5) + scale_color_manual(values = c("1980s" = "grey", "1996"="orange", "2017"="blue","2021-22" = "green")) + coord_fixed(ratio = 1) + geom_text(aes(label=YM), size=3, vjust=1, hjust=1.3) -->
+
+<!-- ``` -->
+
+A kmeans cluster analysis with six groups places all 5 of the 1996 to
+2022 surveys of Lake Toolibin in one group, again with several 1980s
+surveys, as per this overlay on the ordination.
+
+```{r include = FALSE}
+#Run kmeans cluster analysis for just Toolibin and overlay on ordination
+comdataRT.km <- kmeans(comdataRT.hel, 6, nstart = 25)
+```
+
+```{r, fig.align = 'center'}
+#create dataframe for plotting with ggplot with factors as labels
+kmgrpsRT <- comdataRT.km$cluster
+kmgrpsRT <- as.data.frame(kmgrpsRT)
+comdataRT.fact$kmgrpsRT <- kmgrpsRT$kmgrpsRT
+comdataRT.fact$kmgrpsRT <- as.character(comdataRT.fact$kmgrpsRT)
+ggplot(mds5.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=comdataRT.fact$kmgrpsRT), size=7, alpha=0.5) + coord_fixed(ratio = 1) + geom_text(aes(label=YM), size=3, vjust=1, hjust=1.3)
+```
+
+## What is different between 1980s and 1996-2022 for Lake Toolibin?
+
+<!-- A SimPer analysis was undertake to identify species differentiating communities present in the 1980s and those present in later surveys -->
+
+```{r eval=FALSE}
+comdataRT.fact$Period2 <- comdataRT.fact$Period
+comdataRT.fact$Period2 <- gsub('1996', '1996-2022', comdataRT.fact$Period2)
+comdataRT.fact$Period2 <- gsub('2017', '1996-2022', comdataRT.fact$Period2)
+comdataRT.fact$Period2 <- gsub('2021-22', '1996-2022', comdataRT.fact$Period2)
+comdataRT.Simper <- simper(comdataRT, comdataRT.fact$Period2)
+comdataRT.Simper
+```
+
+A SimPer analysis was undertaken to identify those species contributing
+most to differentiating communities of the kmeans group containing all
+of the 1996-2022 surveys from remaining 1980s sites
+
+```{r include=FALSE}
+#identify the kmeans group to which the Jan 2022 survey belongs
+G <- comdataRT.fact[row.names(comdataRT.fact) == "TM0122", 8]
+G
+#create list with all group numbers
+K<- c(1,2,3,4,5,6)
+#subtract group number identified by G
+K <- K[K != G]
+#create duplicate factor for kmeans groups
+comdataRT.fact$kmgrpsRT2 <- comdataRT.fact$kmgrpsRT
+#replace kmeans group values to distinguish the group with the 1996-2022 surveys from the other kmeans groups.
+# comdataRT.fact$kmgrpsRT2 <- gsub(G[1], 'Group one',comdataRT.fact$kmgrpsRT2)
+comdataRT.fact$kmgrpsRT2 <- gsub(K[1], 'Group two', comdataRT.fact$kmgrpsRT2)
+comdataRT.fact$kmgrpsRT2 <- gsub(K[2], 'Group two', comdataRT.fact$kmgrpsRT2)
+comdataRT.fact$kmgrpsRT2 <- gsub(K[3], 'Group two', comdataRT.fact$kmgrpsRT2)
+comdataRT.fact$kmgrpsRT2 <- gsub(K[4], 'Group two', comdataRT.fact$kmgrpsRT2)
+comdataRT.fact$kmgrpsRT2 <- gsub(K[5], 'Group two', comdataRT.fact$kmgrpsRT2)
+comdataRT.fact$kmgrpsRT2 <- gsub('Group two', '2', comdataRT.fact$kmgrpsRT2)
+comdataRT.fact$kmgrpsRT2 <- gsub('Group one', '1', comdataRT.fact$kmgrpsRT2)
+KMgrpsRT.2grp <- data.frame(matrix(ncol = 1, nrow = 39))
+colnames(KMgrpsRT.2grp) <- 'twogrps'
+KMgrpsRT.2grp$twogrps <- comdataRT.fact$kmgrpsRT2
+row.names(KMgrpsRT.2grp) <- row.names(comdataRT.fact)
+KMgrpsRT.2grp$twogrps <- gsub('G1', 'red', KMgrpsRT.2grp$twogrps)
+KMgrpsRT.2grp$twogrps <- gsub('G2', 'grey', KMgrpsRT.2grp$twogrps)
+```
+
+```{r include=FALSE}
+#run simper
+comdataRT.Simper2 <- simper(comdataRT.hel, comdataRT.fact$kmgrpsRT2)
+```
+
+This Simper analyses suggests that the abundances of the following 12
+species best distinguish kmeans group `r G` from the remaining sites
+(accounting for 3/4 of the difference between group `r G` and remaining
+sites).
+
+```{r}
+comdataRT.Simper2
+```
+
+<!-- heatmap with only 2 groups (group with 1996-2022 surveys, and the rest) -->
+
+<!-- ```{r echo=FALSE, warning=FALSEfig.width = 6, fig.height = 6} -->
+
+<!-- kmgrpsRT.2grp.o <- KMgrpsRT.2grp[order(KMgrpsRT.2grp$twogrps), , drop = FALSE] #order kmgrps according to group -->
+
+<!-- comdataRT_o <- comdataRT.hel[order(match(row.names(comdataRT.hel), row.names(kmgrpsRT.2grp.o))), ] #reorder surveys in datafile based on k-means groups -->
+
+<!-- melt_comdataRT_o <- melt(as.matrix(comdataRT_o)) -->
+
+<!-- ggplot(melt_comdataRT_o, aes(Var2, Var1)) + -->
+
+<!-- geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + theme(axis.text.y = element_text(color=kmgrpsRT.2grp.o$twogrps)) + scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey") -->
+
+<!-- ``` -->
+
+```{r warning=FALSE}
+kmgrpsRT.o <- kmgrpsRT[order(kmgrpsRT$kmgrpsRT), , drop = FALSE] #order kmgrps according to group
+kmgrpsRT.o$col <- kmgrpsRT.o$kmgrpsRT
+kmgrpsRT.o$col <- gsub(1, "green", kmgrpsRT.o$col)
+kmgrpsRT.o$col <- gsub(2, "black", kmgrpsRT.o$col)
+kmgrpsRT.o$col <- gsub(3, "blue", kmgrpsRT.o$col)
+kmgrpsRT.o$col <- gsub(4, "red", kmgrpsRT.o$col)
+kmgrpsRT.o$col <- gsub(5, "orange", kmgrpsRT.o$col)
+kmgrpsRT.o$col <- gsub(6, "purple", kmgrpsRT.o$col)
+GT <- kmgrpsRT.o[row.names(kmgrpsRT.o) == "TM0122", 2]
+#create dataframe for graphing helinger abundances on heatmap
+comdataRT_o <- comdataRT.hel[order(match(row.names(comdataRT.hel), row.names(kmgrpsRT.o))), ] #reorder surveys in datafile based on k-means groups
+melt_comdataRT_o <- melt(as.matrix(comdataRT_o))
+#create dataframe for graphing raw abundances on heatmap
+comdataRT_oraw <- comdataRT[order(match(row.names(comdataRT), row.names(kmgrpsRT.o))), ] #reorder surveys in datafile based on k-means groups
+melt_comdataRT_oraw <- melt(as.matrix(comdataRT_oraw))
+#create dataframe for heatmap based on sqrt abundance data
+comdataRT_osqrt <- comdataRT.sqrt[order(match(row.names(comdataRT.sqrt), row.names(kmgrpsRT.o))), ] #reorder surveys in datafile based on k-means groups
+melt_comdataRT_osqrt <- melt(as.matrix(comdataRT_osqrt))
+```
+
+This can be seen in the following heatmap of relative helinger
+transformed species abundances across the Lake Toolibin surveys, with
+K-means groups labelled in different colours. Group `r G` containing all
+of the 1996-2022 surveys is coloured `r GT`. From this it can be seen
+that k-means group `r G` is characterized by the <u>COMBINATION</u> of
+relatively high numbers of Grey Teal, Hoary-headed Grebe, Eurasian Coot
+and Pink-eared Duck (these were the species identified in the simper
+analyses), and fewer Freckled Duck, Nankeen Night Heron, Great
+Cormorant, Little Pied Cormorant, Yellow-billed Spoonbill and Great
+Egret.
+
+```{r fig.width = 8, fig.height = 9, fig.align = 'center'}
+#heatmap using helinger transformed abundance data
+ggplot(melt_comdataRT_o, aes(Var2, Var1)) +
+  geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + theme(axis.text.y = element_text(color=kmgrpsRT.o$col)) +
+  scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey")
+```
+
+<!-- Additional plots with raw and sqrt abundance data -->
+
+--\> <!-- ```{r echo=FALSE} -->
+<!-- #heatmap using raw abundance data -->
+<!-- ggplot(melt_comdataRT_oraw, aes(Var2, Var1)) + -->
+<!-- geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + theme(axis.text.y = element_text(color=kmgrpsRT.o$col)) + -->
+<!-- scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey") -->
+<!-- ``` -->
+
+<!-- ```{r echo=FALSE} -->
+
+<!-- #heatmap using raw abundance data -->
+
+<!-- ggplot(melt_comdataRT_osqrt, aes(Var2, Var1)) + -->
+
+<!-- geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + theme(axis.text.y = element_text(color=kmgrpsRT.o$col)) + -->
+
+<!-- scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey") -->
+
+<!-- ``` -->
+
+```{r}
+#setup datafile for histograms including colours
+comdataRT.h <- comdataRT
+comdataRT.h$order <- c(1:39) #create variable for ordering dates correctly in histograms
+comdataRT.h$date <- comdataRT.fact$VISIT_DATE
+comdataRT.h$kmgrp <- comdataRT.fact$kmgrpsRT #add in km groups
+comdataRT.h$kmgrpcol <- comdataRT.h$kmgrp #copy km groups for conversion to colours
+comdataRT.h$kmgrpcol[comdataRT.h$kmgrpcol != G] <- "grey"  #G = gkm group to which the 1996-2022 surveys belong.
+comdataRT.h$kmgrpcol[comdataRT.h$kmgrpcol == G] <- "red"
+#comdataRT.h$kmgrpcol <- as.factor(comdataRT.h$kmgrpcol) #convert colour variable to a factor
+comdataRT.h$survey <- row.names(comdataRT.h)
+hist.col <- as.data.frame(comdataRT.h[, "kmgrpcol"]) #craete new dataframe for colour of x axis labels
+hist.col$kmcol <- hist.col[, 1]
+```
+
+The following bar charts show raw abundances of the above mentioned
+species for each survey, with those surveys in group `r G` (which
+contains all of the 1996 to 2022 surveys) highlighted in red. Also
+included are abundance plots for xxx other species specifically
+mentioned in the Toolibin Lake Recovery Plan.
+
+```{r fig.height = 4, fig.align='center'}
+ggplot(data=comdataRT.h, aes(x=reorder(date, order), Freckled.Duck, fill = kmgrpcol)) + 
+  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Freckled Duck") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
+
+ggplot(data=comdataRT.h, aes(x=reorder(date, order), Great.Egret, fill = kmgrpcol)) + 
+  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Great Egret") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
+
+ggplot(data=comdataRT.h, aes(x=reorder(date, order), Nankeen.Night.Heron, fill = kmgrpcol)) + 
+  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Nankeen Night Heron") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
+
+ggplot(data=comdataRT.h, aes(x=reorder(date, order), Little.Pied.Cormorant, fill = kmgrpcol)) + 
+  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Little Pied Cormorant") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
+
+ggplot(data=comdataRT.h, aes(x=reorder(date, order), Grey.Teal, fill = kmgrpcol)) + 
+  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Grey Teal") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
+
+ggplot(data=comdataRT.h, aes(x=reorder(date, order), Pink.eared.Duck, fill = kmgrpcol)) + 
+  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Pink-eared Duck") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
+
+ggplot(data=comdataRT.h, aes(x=reorder(date, order), Eurasian.Coot, fill = kmgrpcol)) + 
+  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Eurasian Coot") + theme(plot.title = element_text(vjust = -8, hjust = 0.15))
+
+ggplot(data=comdataRT.h, aes(x=reorder(date, order), Australian.Shelduck, fill = kmgrpcol)) + 
+  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Australian Shelduck") + theme(plot.title = element_text(vjust = -8, hjust = 0.25))
+
+ggplot(data=comdataRT.h, aes(x=reorder(date, order), Black.winged.Stilt, fill = kmgrpcol)) + 
+  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Black-winged Stilt") + theme(plot.title = element_text(vjust = -8, hjust = 0.25))
+```
+
+Waterbird species richness in November 2021 and January 2022 was 14 and
+18 respec18 species. These values are well within the range of richness
+values recorded during the 1980s, although several of the 1980s surveys
+had slightly higher richness (up to 24 species).
+
+```{r}
+comdataRT.h$rich <- rowSums(comdataRT!=0)
+ggplot(data=comdataRT.h, aes(x=reorder(date, order), rich)) + 
+  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Species richness") + ggtitle("Species richness") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
+```
+
+# INVERTEBRATES
+
+
+
+
+## Multivariate analysis of composition
+```{r include=FALSE}
+rawdata.I.orig <- read.csv("./Newdata/Invert matrix for analyses.csv", row.names = 1)
+rawdata.I <- rawdata.I.orig[, 2:31] #use only Toolibin-Walbyring data (exclude SPS sites and species names)
+rawdata.I <- t(rawdata.I)
+row.names(rawdata.I) <- gsub("[.]", "-", row.names(rawdata.I))
+Inv.fact.orig <- read.csv("./Newdata/Invert factors.csv", row.names = 1)
+Inv.fact <- Inv.fact.orig[1:30, ]
+#rawdata.I[is.na(rawdata.I)]<-0 # replace na with 0
+```
+
+```{r include=FALSE}
+mds1.I <- metaMDS(rawdata.I, distance ="bray", k=2) #nMDS in 2 dimensions
+#Extract mds2 coordinates and create new dataframe with coordinates, survey, and survey period
+mds1.I.pts <- as.data.frame(mds1.I$points) #extract 2D ordination coordinates (points)
+mds1.I.pts$Sample <- row.names(mds1.I.pts)
+row.names(mds1.I.pts) <-gsub("[.]", "-", row.names(mds1.I.pts))
+#mds1.I.pts$Year <- as.factor(Inv.fact[match(row.names(mds1.I.pts), row.names(Inv.fact)), 1])
+mds1.I.pts$Period <- as.factor(Inv.fact[match(row.names(mds1.I.pts), row.names(Inv.fact[1:30, ])), 1])
+mds1.I.pts$Survey <- as.factor(Inv.fact[match(row.names(mds1.I.pts), row.names(Inv.fact[1:30, ])), 5])
+mds1.I.pts$Wetland <- as.factor(Inv.fact[match(row.names(mds1.I.pts), row.names(Inv.fact[1:30, ])), 3])
+mds1.I.pts$Order <- as.factor(Inv.fact[match(row.names(mds1.I.pts), row.names(Inv.fact[1:30, ])), 4])
+```
+
+Below is a plot of a 2D ordination of invertebrate samples based on
+species presence/absence data, with acceptable stress of
+`r round(mds1.I$stress, digits=2)`.This shows the partially developed
+community of April 2017 (A17) in both Toolibin and Walbyring (far right
+of plot) being very different from other samples collected after longer
+periods of inundation. This probably reflects an incompletely developed
+community, since samples were collected only 2 months after the fill
+event, but maybe also poor water quality and the time of year (see Cale
+and Pinder, 2019). This sampling event is useful as an indicator of what
+was present early following a summer fill event but does not represent
+the contemporary invertebrate values of the lake. All of the Oct 2017,
+Nov 2021 and Jan 2022 samples are located closer to, but still separate
+from, the 1996 samples. Within the 2021-22 samples, the Nov samples
+tended to group separate from the Jan samples suggesting some seasonal
+turnover of species composition within the year. The most likely
+explanation of the 1996 samples grouping separately to the 2017/21/22
+spring/summer samples is the much high salinity (9400 mg/L) in Dec 1996
+compared to the freshwater present in Oct 2017 (780), Nov 2021 (1770
+mg/L) and Jan 2022 (2000 mg/L). It could be said that the 1996
+community, being sampled when the lake was quite saline, was not typical
+of invertebrate communities present in what is otherwise considered to
+be a freshwater lake.
+
+In three of the five sampling periods the Walbyring samples group
+somewhat separate to the Toolibin samples, but for Apr 2017 and November
+2021 this is not the case.
+
+```{r fig.align = 'center'}
+#first set axis limits based on maximum values of coordinates
+Xmin <- min(mds1.I.pts$MDS1)*1.2 
+Xmax <- max(mds1.I.pts$MDS1)*1.2
+Ymin <- min(mds1.I.pts$MDS2)*1.2
+Ymax <- max(mds1.I.pts$MDS2)*1.2
+ggplot(mds1.I.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Wetland, pch = Survey), size=5) + coord_fixed(ratio = 1) + theme(text = element_text(size=15))
+#+ geom_text(aes(label=Sample), size=2, vjust=1, hjust=1.3) #add labels if needed
+```
+
+#ordination including six reference sites from Pinder, A.M., S.A. Halse, J.M. McRae, and R. J. Shiel. ‘Aquatic Invertebrate Assemblages of Wetlands and Rivers in the Wheatbelt Region of Western Australia’. Records of the Western Australian Museum Supplement 67 (2004): 7–37.
+
+#create datasets
+```{r include=FALSE}
+rawdata.I2 <- rawdata.I.orig[, 2:37] #remove species names
+rawdata.I2 <- t(rawdata.I2)
+row.names(rawdata.I2) <- gsub("[.]", "-", row.names(rawdata.I2))
+Inv.fact.orig <- read.csv("./Newdata/Invert factors.csv", row.names = 1) #import site factor variables
+Inv.fact2 <- Inv.fact.orig
+#rawdata.I[is.na(rawdata.I)]<-0 # replace na with 0
+```
+
+#ordination
+```{r include=FALSE}
+mds2.I <- metaMDS(rawdata.I2, distance ="bray", k=2) #nMDS in 2 dimensions
+#Extract mds2 coordinates and create new dataframe with coordinates, survey, and survey period
+mds2.I.pts <- as.data.frame(mds2.I$points) #extract 2D ordination coordinates (points)
+mds2.I.pts$Sample <- row.names(mds2.I.pts)
+row.names(mds2.I.pts) <-gsub("[.]", "-", row.names(mds2.I.pts))
+#mds2.I.pts$Year <- as.factor(Inv.fact[match(row.names(mds2.I.pts), row.names(Inv.fact)), 1])
+mds2.I.pts$Period <- as.factor(Inv.fact2[match(row.names(mds2.I.pts), row.names(Inv.fact2)), 1])
+mds2.I.pts$Survey <- as.factor(Inv.fact2[match(row.names(mds2.I.pts), row.names(Inv.fact2)), 5])
+mds2.I.pts$Wetland <- as.factor(Inv.fact2[match(row.names(mds2.I.pts), row.names(Inv.fact2)), 3])
+mds2.I.pts$Order <- as.factor(Inv.fact2[match(row.names(mds2.I.pts), row.names(Inv.fact2)), 4])
+```
+
+#ordination plot
+```{r fig.align = 'center'}
+#first set axis limits based on maximum values of coordinates
+Xmin <- min(mds2.I.pts$MDS1)*1.2 
+Xmax <- max(mds2.I.pts$MDS1)*1.2
+Ymin <- min(mds2.I.pts$MDS2)*1.2
+Ymax <- max(mds2.I.pts$MDS2)*1.2
+ggplot(mds2.I.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Wetland, pch = Survey), size=5) + coord_fixed(ratio = 1) + theme(text = element_text(size=15))
+#+ geom_text(aes(label=Sample), size=2, vjust=1, hjust=1.3) #add labels if needed
+```
+
+#re-run ordination without the April 2017 samples
+```{r include=FALSE}
+rawdata.I3 <- rawdata.I.orig[, 2:37] #remove species names
+rawdata.I3 <- rawdata.I3[, -grep("A17", colnames(rawdata.I3))] #exclude april 2017 columns
+rawdata.I3 <- t(rawdata.I3)
+row.names(rawdata.I3) <- gsub("[.]", "-", row.names(rawdata.I3))
+Inv.fact.orig <- read.csv("./Newdata/Invert factors.csv", row.names = 1) #import site factor variables
+Inv.fact3 <- Inv.fact.orig
+#rawdata.I[is.na(rawdata.I)]<-0 # replace na with 0
+```
+
+#ordination
+```{r include=FALSE}
+mds3.I <- metaMDS(rawdata.I3, distance ="bray", k=2) #nMDS in 2 dimensions
+#Extract mds2 coordinates and create new dataframe with coordinates, survey, and survey period
+mds3.I.pts <- as.data.frame(mds3.I$points) #extract 2D ordination coordinates (points)
+mds3.I.pts$Sample <- row.names(mds3.I.pts)
+row.names(mds3.I.pts) <-gsub("[.]", "-", row.names(mds3.I.pts))
+#mds3.I.pts$Year <- as.factor(Inv.fact[match(row.names(mds3.I.pts), row.names(Inv.fact)), 1])
+mds3.I.pts$Period <- as.factor(Inv.fact2[match(row.names(mds3.I.pts), row.names(Inv.fact2)), 1])
+mds3.I.pts$Survey <- as.factor(Inv.fact2[match(row.names(mds3.I.pts), row.names(Inv.fact2)), 5])
+mds3.I.pts$Wetland <- as.factor(Inv.fact2[match(row.names(mds3.I.pts), row.names(Inv.fact2)), 3])
+mds3.I.pts$Order <- as.factor(Inv.fact2[match(row.names(mds3.I.pts), row.names(Inv.fact2)), 4])
+```
+
+#stress of the above ordination is very high (best 0.19) so repeated as a 3D ordination
+```{r include=FALSE}
+mds3.I <- metaMDS(rawdata.I3, distance ="bray", k=3) #nMDS in 2 dimensions
+#Extract mds2 coordinates and create new dataframe with coordinates, survey, and survey period
+mds3.I.pts <- as.data.frame(mds3.I$points) #extract 2D ordination coordinates (points)
+mds3.I.pts$Sample <- row.names(mds3.I.pts)
+row.names(mds3.I.pts) <-gsub("[.]", "-", row.names(mds3.I.pts))
+#mds3.I.pts$Year <- as.factor(Inv.fact[match(row.names(mds3.I.pts), row.names(Inv.fact)), 1])
+mds3.I.pts$Period <- as.factor(Inv.fact2[match(row.names(mds3.I.pts), row.names(Inv.fact2)), 1])
+mds3.I.pts$Survey <- as.factor(Inv.fact2[match(row.names(mds3.I.pts), row.names(Inv.fact2)), 5])
+mds3.I.pts$Wetland <- as.factor(Inv.fact2[match(row.names(mds3.I.pts), row.names(Inv.fact2)), 3])
+mds3.I.pts$Order <- as.factor(Inv.fact2[match(row.names(mds3.I.pts), row.names(Inv.fact2)), 4])
+mds3.I.pts$Col <- as.string(mds3.I.pts$Wetland)
+mds3.I.pts$Col <- replace(mds3.I.pts$Col, mds3.I.pts$Col == "Toolibin", "red")
+str(mds3.I.pts)
+```
+
+#ordination plot
+```{r fig.align = 'center'}
+#first set axis limits based on maximum values of coordinates
+Xmin <- min(mds3.I.pts$MDS1)*1.2 
+Xmax <- max(mds3.I.pts$MDS1)*1.2
+Ymin <- min(mds3.I.pts$MDS2)*1.2
+Ymax <- max(mds3.I.pts$MDS2)*1.2
+ggplot(mds3.I.pts, aes(x=MDS2, y=MDS3)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Wetland, pch = Survey), size=5) + coord_fixed(ratio = 1) + theme(text = element_text(size=15))
+#+ geom_text(aes(label=Sample), size=2, vjust=1, hjust=1.3) #add labels if needed
+```
+
+```{r}
+install.packages("rgl")
+plot3d(x = mds3.I.pts$MDS1, y = mds3.I.pts$MDS2, z = mds3.I.pts$MDS3, col = mds3.I.pts$Wetland)
+```
+
+
+
+
+
+
+
+
+
+##Stacked richness column plots for Lake Toolibin
+
+Below are stacked column plots of species richness by major taxonomic
+group by individual samples or by sampling period (all 3 samples for
+each lake aggregated within sampling period).
+
+The first plot shows richness within each of the 15 samples collected
+from Lake Toolibin between 1996 and 2022 and the next one shows richness
+combined across samples for each period.
+
+Species richness in 1996 varied from 34 to 40/sample, with 50 species in
+total. Lower richness in April 2017 was followed by richness values in
+October 2017 that were slightly higher (38 to 44 species/sample, total
+60) than in 1996. The low April 2017 richness most likely reflects an
+early stage in community development, being only 2 months after the Feb
+fill event and is not considered further in this discussion, although
+some species were present in April 2017 that were absent later in the
+year.
+
+Richness in Nov 2021 was lower than in Oct 2017 at the sample level (26
+to 33 species/sample) but the 56 species collected across the three
+samples is almost as high as the 60 in Oct 2017, indicating greater
+heterogeneity amongst the Nov 2021 samples. In January 2022 richness was
+slightly higher sample level (30 to 34 species) but had declined
+slightly across the lake (50 species). Of particular note is that
+coleopteran and odonate diversity declined between the two seasons but
+this was partly offset by richer Diptera and Hemipteran assemblages.
+
+Some odonate species may have all pupated by January and left the lake,
+with or without first laying eggs that had not become identifiable
+larvae. Some beetles may also have left the lake after terrestrial
+pupation, although adults are generally aquatic when not flying between
+wetlands and can return to the same waterbody, or some species may not
+have survived to maturity. The diversity of damselflies and dragonflies
+(Odonata) was lower in 2021-22 (13 and 10 species in Nov and Jan) than
+in 1996 (17 species) and Oct 2017 (16 species).
+
+Hemipteran diversity dramatically increased between Nov 2021 (2 taxa)
+and Jan 2022 (7 taxa), partly as a result of species resolution becoming
+possible with a change from juveniles to adults. This is the highest
+richness recorded for this group at Toolibin.
+
+Copepods were less diverse in 2021/22 (same three species in both
+seasons) than in Oct 2017, but were of similar diversity to that present
+in 1996 (four species, albeit with only one in common). One of the
+copepods present in 1996 but not subsequently was <i>Apocyclops
+dengizicus</i> whose presence in 1996 reflects the higher salinity in
+that year.
+
+Cale and Pinder (2019) noted that ostracods were depauperate in Oct 2017
+(three species), relative to 1996 (6 species) and suggested this could
+be due to a decline in viability of the sediment egg bank over the 21
+years between 1996 and 2017 inundation events, and/or fewer freshwater
+sources of colonisation in the surrounding landscape. It is thus
+surprising that in Nov 2021 this group was richer (9 species) than in
+1996. It may have been that larger numbers and higher diversity of
+propagules or adults were washed into the lake during the 2021 winter
+inflows than in the 2017 summer fill, in addition to there being a
+viable egg bank left over from the 2017 fill as a base richness, with
+there being only 4 years between these fills. By Jan 2022 ostracod
+diversity had declined again to just 3 species, probably representing
+completion of lifecycles.
+
+The number of cladoceran species (water fleas) was greater in Jan 2022
+(12 species) than in either 1996 (8 species) or Oct 2017 (10 species).
+
+Some other minor differences between sampling events include the absence
+of amphipods (1 species) in 2021-22, presence of annelids only in 2017
+(1 species) and presence of molluscs (1 species) only in 2021-22.
+
+##Load and format data
+```{r}
+#create long file for aggregation in next chunks
+rawdata.IR.orig <- t(read.csv("./Newdata/Invert matrix for richness.csv", row.names = 1))
+rawdata.IR <- as.matrix(rawdata.IR.orig)
+Inv.stack <- as.data.frame(as.table(rawdata.IR))
+colnames(Inv.stack) <- c("Sample", "Code", "Presence")
+Inv.stack$Wetland <- substr(Inv.stack$Sample, 1, 1) #create new variable for wetland (Toolibin or Walbyring)
+Inv.stack$Period <- substr(Inv.stack$Sample, 4,6) #create new variable for survey period
+Inv.stack$Sample <-gsub("[.]", "-", Inv.stack$Sample) #convert dot in sample names to a dash for consistency between files (the dots are created on sample import).
+Taxonomy3 <- read.csv("./Newdata/Taxonomy3.csv")
+colnames(Taxonomy3) <- c("Group", "Group.order", "Code", "LowestID")
+Inv.stack$Group <- Taxonomy3[match(Inv.stack$Code, Taxonomy3$Code), 1] #add invertebrate group to the data field to be used for stacking.
+Inv.stack$Presence <- as.numeric(Inv.stack$Presence)
+Inv.fact.orig <- read.csv("./Newdata/Invert factors.csv", row.names = 1)
+Inv.fact <- Inv.fact.orig[1:30, ]
+```
+
+```{r fig.align = 'center'}
+# Aggregate data by taxonomic group and sample for just Lake Toolibin and produce a stacked column plot
+Inv.stack.T <- subset(Inv.stack, Wetland %in% "T") #create Toolibin only dataset
+Inv.stack.T.agg <- aggregate(data=Inv.stack.T, Presence ~ Sample + Group, FUN = "sum") #aggregate count data by species and survey
+Inv.stack.T.agg <- Inv.stack.T.agg[!(Inv.stack.T.agg$Group=="Leeches" | Inv.stack.T.agg$Group=="Nematodes"),]
+Inv.fact$Period <- substr(row.names(Inv.fact), 4,6)
+Inv.stack.T.agg$Order <- Inv.fact[match(Inv.stack.T.agg$Sample, row.names(Inv.fact)), 4] #add in a variable for ordering the samples on the column plots- from the factor file.
+Inv.stack.T.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
+Inv.stack.T.agg < setorder(Inv.stack.T.agg, cols = "Grouporder") #order by taxonomic group
+Inv.stack.T.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
+ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporder)) + 
+  geom_bar(stat="identity", colour = "black") +
+  scale_fill_manual(values = c("gray75","gray58","gray30","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","yellowgreen","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('hydrozoans','turbellarians','snails','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
+  xlab("Site-date") +
+  ylab("Number of invertebrate species") + 
+  theme(axis.text = element_text(size = 12)) + 
+  theme(axis.title = element_text(size = 15)) +
+  theme(axis.text.x=element_text(angle = -90, hjust = 0)) +
+  theme(axis.title.y = element_text(vjust = +2.5)) +
+  theme(legend.title=element_blank())
+```
+
+Need to remove rotifers and protozoans from richness.
+
+```{r fig.align = 'center'}
+# Aggregate data by taxonomic group and sampling period for Lake Toolibin and produce stacked column plot of richness
+Inv.stack.TW <- Inv.stack.T
+Inv.stack.TW$Period <- substr(Inv.stack.T$Sample, 4,6)
+Inv.stack.TW.agg <- aggregate(data=Inv.stack.TW, Presence ~ Period + Code, FUN = "sum") #aggregate count data by species and survey
+Inv.stack.TW.agg$Group <- Taxonomy3[match(Inv.stack.TW.agg$Code, Taxonomy3$Code), 2] #add invertebrate group to the data field to be used for stacking.
+Inv.stack.TW.agg$Presence <- replace(Inv.stack.TW.agg$Presence, Inv.stack.TW.agg$Presence >1, 1)
+Inv.stack.TW.agg2 <- aggregate(data=Inv.stack.TW.agg, Presence ~ Period + Group, FUN = "sum") #aggregate count data by species and survey
+Inv.stack.TW.agg2$Order <- Inv.fact[match(Inv.stack.TW.agg2$Period, Inv.fact$Period), 3] #add in a variable for ordering the samples on the column plots- from the factor file.
+ggplot(Inv.stack.TW.agg2, aes(x=reorder(Period, Order), y=Presence, fill=Group)) + geom_bar(stat="identity", colour = "black") + scale_fill_manual(values = c("#000000","#FF0000","#00FF00","#0000FF","#0099CC", "#FFFF00","#00FFFF","#FF00FF","#808080","#800000","#808000","#008000","#800080","#000080","#C0C0C0"))
+
+#to change order of fills in a stack:
+fill = factor(Group, levels=c("Protozoans", "r", "f"))
+```
+
+The next two plots are show per sample and per wetland richness for Lake
+Walbyring. As was discussed in Cale and Pinder (2019), richness at
+Walbyring in 2017 was much lower than it was in 1996, but it increased
+moderately in 2021-22. Compared to both 1996 and Oct 2017, the 2021/22
+samples had more species of cladocerans, dipterans, hemipterans. By
+contrast annelids were present in 1996 and 2021 but absent in 2021/22
+and the number of copepod species was lower in 2021/22 than in either
+1996 or 2021.
+
+Molluscs were more prevalent in 2021/22 (occurred in a greater
+proportion of samples) and. for the first time, included two species in
+Jan 2022. Amphipods also returned to Walbyring, having been present in
+1996 but not in 2017. By contrast annelids were absent in 2021/22 and
+water mites were largely absent, whereas annelids were present in almost
+all samples collected in 1996 and 2017 and mites present in all samples
+in Oct 2017. Beetles (Coleptera) were as diverse as in 2017 but lower
+than in 1996.
+
+```{r fig.align = 'center'}
+# Aggregate data by taxonomic group and sample for just Lake Walbyring and produce a stacked column plot
+Inv.stack.W <- subset(Inv.stack, Wetland %in% "W") #create Toolibin only dataset
+Inv.stack.W.agg <- aggregate(data=Inv.stack.W, Presence ~ Sample + Group, FUN = "sum") #aggregate count data by species and survey
+Inv.stack.W.agg$Order <- Inv.fact[match(Inv.stack.W.agg$Sample, row.names(Inv.fact)), 3] #add in a variable for ordering the samples on the column plots- from the factor file.
+ggplot(Inv.stack.W.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Group)) + geom_bar(stat="identity", colour = "black") + scale_fill_manual(values = c("#000000","#FF0000","#00FF00","#0000FF","#FF33CC", "#FFFF00","#00FFFF","#FF00FF","#808080","#800000","#808000","#008000","#800080","#000080","#C0C0C0"))
+```
+
+```{r fig.align = 'center'}
+# Aggregate data by taxonomic group and sampling period for Lake Walbyring and produce stacked column plot of richness
+Inv.stack.WW <- Inv.stack.W
+Inv.stack.WW$Period <- substr(Inv.stack.T$Sample, 4,6)
+Inv.stack.WW.agg <- aggregate(data=Inv.stack.WW, Presence ~ Period + Code, FUN = "sum") #aggregate count data by species and survey
+Inv.stack.WW.agg$Group <- Taxonomy3[match(Inv.stack.WW.agg$Code, Taxonomy3$Code), 2] #add invertebrate group to the data field to be used for stacking.
+Inv.stack.WW.agg$Presence <- replace(Inv.stack.WW.agg$Presence, Inv.stack.WW.agg$Presence >1, 1)
+Inv.stack.WW.agg2 <- aggregate(data=Inv.stack.WW.agg, Presence ~ Period + Group, FUN = "sum") #aggregate count data by species and survey
+Inv.stack.WW.agg2$Order <- Inv.fact[match(Inv.stack.WW.agg2$Period, Inv.fact$Period), 3] #add in a variable for ordering the samples on the column plots- from the factor file.
+ggplot(Inv.stack.WW.agg2, aes(x=reorder(Period, Order), y=Presence, fill=Group)) + geom_bar(stat="identity", colour = "black") + scale_fill_manual(values = c("#000000","#FF0000","#00FF00","#0000FF","#0099CC", "#FFFF00","#00FFFF","#FF00FF","#808080","#800000","#808000","#008000","#800080","#000080","#C0C0C0"))
+```
+
+The next plot shows total richness across both lakes in each sampling
+period. Diversity across both lakes was greatest in 1996, despite the
+much higher salinity. Total diversity was very slightly lower in 2021/22
+than in 2017.
+
+```{r fig.align = 'center'}
+# Aggregate data by taxonomic group and sampling period for both lakes and produce stacked column plot of richness
+Inv.stack.TW <- Inv.stack
+Inv.stack.TW$Period <- substr(Inv.stack.TW$Sample, 4,6)
+Inv.stack.TW.agg <- aggregate(data=Inv.stack.TW, Presence ~ Period + Code, FUN = "sum") #aggregate count data by species and survey
+Inv.stack.TW.agg$Group <- Taxonomy3[match(Inv.stack.TW.agg$Code, Taxonomy3$Code), 2] #add invertebrate group to the data field to be used for stacking.
+Inv.stack.TW.agg$Presence <- replace(Inv.stack.TW.agg$Presence, Inv.stack.TW.agg$Presence >1, 1)
+Inv.stack.TW.agg2 <- aggregate(data=Inv.stack.TW.agg, Presence ~ Period + Group, FUN = "sum") #aggregate count data by species and survey
+Inv.stack.TW.agg2$Order <- Inv.fact[match(Inv.stack.TW.agg2$Period, Inv.fact$Period), 3] #add in a variable for ordering the samples on the column plots- from the factor file.
+ggplot(Inv.stack.TW.agg2, aes(x=reorder(Period, Order), y=Presence, fill=Group)) + geom_bar(stat="identity", colour = "black") + scale_fill_manual(values = c("#000000","#FF0000","#00FF00","#0000FF","#0099CC", "#FFFF00","#00FFFF","#FF00FF","#808080","#800000","#808000","#008000","#800080","#000080","#C0C0C0"))
+```
+
+To put composition of the Toolibin and Walbyring invertebrate
+communities in a regional context, comparable data from six other good
+condition Wheatbelt tree-dominated freshwater wetlands were included in
+analyses. These were all sampled in the Biological Survey of the South
+West Agricultural Zone by Pinder et al. (2004) in the late 1990s and are
+all in the central and southern Wheatbelt. Sampling methods and effort
+were identical to that used at Toolibin and Walbyring at a single sample
+level. To achieve this some lumping of species to genera level was used
+to make taxonomic composition more comparable, especially for beetles.
+
+```{r include=FALSE}
+rawdata.IP <- rawdata.I.orig
+row.names(rawdata.IP) <- gsub("[.]", "-", row.names(rawdata.IP))
+Inv.fact.IP <- Inv.fact.orig
+rawdata.IP[is.na(rawdata.IP)]<-0 # replace na with 0
+```
+
+## Multivariate analysis of composition
+
+```{r include=FALSE}
+mds1.IP <- metaMDS(rawdata.IP, distance ="bray", k=2) #nMDS in 2 dimensions
+#Extract mds2 coordinates and create new dataframe with coordinates, survey, and survey period
+mds1.IP.pts <- as.data.frame(mds1.IP$points) #extract 2D ordination coordinates (points)
+mds1.IP.pts$Sample <- row.names(mds1.IP.pts)
+row.names(mds1.IP.pts) <-gsub("[.]", "-", row.names(mds1.IP.pts))
+mds1.IP.pts$Year <- as.factor(Inv.fact.IP[match(row.names(mds1.IP.pts), row.names(Inv.fact.IP)), 1])
+```
+
+The ordination shows communities for these six 'SAP' sites (purple
+circles) around the periphery of the cloud of Toolibin/Walbyring
+samples. This suggests the Toolibin and Walbyring communities are not
+greatly different from these other samples
+
+```{r fig.align = 'center'}
+#first set axis limits based on maximum values of coordinates
+Xmin <- min(mds1.IP.pts$MDS1)*1.2 
+Xmax <- max(mds1.IP.pts$MDS1)*1.2
+Ymin <- min(mds1.IP.pts$MDS2)*1.2
+Ymax <- max(mds1.IP.pts$MDS2)*1.2
+ggplot(mds1.IP.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Year), size=5) + coord_fixed(ratio = 1) + geom_text(aes(label=Sample), size=2, vjust=1, hjust=1.3)
+```
+
+This is the same ordination plot but with size of symbols scaled to
+richness (cubed for exaggeration) of the communities. This indicates
+that most of the Toolibin and Walbyring samples, other than those
+sampled in April 2017, had communities that were as rich as these other
+wetlands.
+
+```{r fig.align = 'center'}
+mds1.IP.pts$Richness <- rowSums(rawdata.IP)
+ggplot(mds1.IP.pts, aes(x=MDS1, y=MDS2, size=Richness)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(fill=Year), pch=21) + coord_fixed(ratio = 1) + geom_text(aes(label=Sample), size=2, vjust=1, hjust=1.3) + scale_size(range = c(1, 10))
+```
+
+Repeat ordination without April 2017 data. In this case stress is \>0.18
+so axes 1v2 of a 3D ordination is used.
+
+```{r, include=FALSE}
+rawdata.noA17 <- as.data.frame(rawdata.I.orig) %>% filter(!str_detect(rownames(rawdata.I.orig), 'A17'))
+row.names(rawdata.noA17) <- gsub("[.]", "-", row.names(rawdata.noA17))
+Inv.fact.noA17 <- as.data.frame(Inv.fact.IP) %>% filter(!str_detect(rownames(Inv.fact.IP), 'A17'))
+rawdata.noA17[is.na(rawdata.noA17)]<-0 # replace na with 0
+```
+
+```{r include=FALSE}
+mds1.noA17 <- metaMDS(rawdata.noA17, distance ="bray", k=3) #nMDS in 2 dimensions
+#Extract mds2 coordinates and create new dataframe with coordinates, survey, and survey period
+mds1.noA17.pts <- as.data.frame(mds1.noA17$points) #extract 2D ordination coordinates (points)
+mds1.noA17.pts$Sample <- row.names(mds1.noA17.pts)
+row.names(mds1.noA17.pts) <-gsub("[.]", "-", row.names(mds1.noA17.pts))
+mds1.noA17.pts$Year <- as.factor(Inv.fact.noA17[match(row.names(mds1.noA17.pts), row.names(Inv.fact.noA17)), 1])
+```
+
+```{r, include=FALSE}
+mds1.noA17.pts$Richness <- rowSums(rawdata.noA17)
+```
+
+```{r fig.align = 'center'}
+#first set axis limits based on maximum values of coordinates
+Xmin <- min(mds1.noA17.pts$MDS1)*1.2 
+Xmax <- max(mds1.noA17.pts$MDS1)*1.2
+Ymin <- min(mds1.noA17.pts$MDS2)*1.2
+Ymax <- max(mds1.noA17.pts$MDS2)*1.2
+ggplot(mds1.noA17.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(fill=Year), pch=21, size=10) + coord_fixed(ratio = 1) + geom_text(aes(label=Sample), size=2, vjust=1, hjust=1.3)
+```
+
+The Toolibin and Walbyring samples are overlaid on a plot of salinity
+
+```{r}
+TWrich <- read.csv("./Data/SAP sal richness.csv", row.names = 1)
+TWrich$Period <- as.factor(TWrich$Period)
+```
+
+```{r}
+ggplot(TWrich) + geom_point(aes(salinity, SAPrichness, colour=Period), pch=21, size=5) + scale_x_log10() + geom_point(aes(salinity, TWrichness, colour=Period), pch=19, size=5)
+```
+
+```{r}
+TWrich <- read.csv("./Data/SAP sal richness2.csv", row.names = 1)
+TWrich$Period <- as.factor(TWrich$Period)
+str(TWrich)
+```
+
+```{r}
+ggplot(TWrich, aes(salinity, SAPrichness, colour=Period, size=5)) + scale_x_log10() + geom_point(colour=Period) + scale_shape_manual(values = c(19,1,1,1,1))
+
+
+ggplot(TWrich, aes(x = salinity, y = SAPrichness)) + geom_point(aes(colour="black", shape=factor(Period), fill=factor(Period)), size=5) + scale_shape_manual(values = c(1,19,19,19,19)) + scale_fill_manual(values=c("white", "red", "blue", "green", "black")) + scale_x_log10() 
+
+
+p <- ggplot(TWrich, aes(salinity, SAPrichness)) +
+  geom_point(aes(colour = factor(Period)))
+p + scale_fill_manual(values = c("white", "red", "blue", "green", "black"))
+
+
+
+```

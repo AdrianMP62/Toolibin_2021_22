@@ -29,9 +29,9 @@ TW-O17,2017,T,Toolibin,3,O17
 W1-O17,2017,W,Walbyring,3,O17
 W2-O17,2017,W,Walbyring,3,O17
 W3-O17,2017,W,Walbyring,3,O17
-SPS034,,O,,6,
-SPS049,,O,,6,
-SPS072,,O,,6,
-SPS082,,O,,6,
-SPS083,,O,,6,
-SPS111,,O,,6,
+SPS034,1990s,R,Reference,6,90s
+SPS049,1990s,R,Reference,6,90s
+SPS072,1990s,R,Reference,6,90s
+SPS082,1990s,R,Reference,6,90s
+SPS083,1990s,R,Reference,6,90s
+SPS111,1990s,R,Reference,6,90s
