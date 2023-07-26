@@ -790,7 +790,6 @@ mds3.I.pts$Col <- replace(mds3.I.pts$Col, mds3.I.pts$Col == "Toolibin", "red")
 mds3.I.pts$Col <- replace(mds3.I.pts$Col, mds3.I.pts$Col == "Walbyring", "blue")
 mds3.I.pts$Col <- replace(mds3.I.pts$Col, mds3.I.pts$Col == "Reference", "green")
 mds3.I.pts$Col <- as.factor(mds3.I.pts$Col)
-str(mds3.I.pts)
 ```
 
 #ordination plot
@@ -805,10 +804,8 @@ ggplot(mds3.I.pts, aes(x=MDS2, y=MDS3)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + ge
 ```
 
 ```{r}
-install.packages("rgl")
-plot3d(x = mds3.I.pts$MDS1, y = mds3.I.pts$MDS2, z = mds3.I.pts$MDS3, col = mds3.I.pts$Wetland)
+plot3d(x = mds3.I.pts$MDS1, y = mds3.I.pts$MDS2, size=12, z = mds3.I.pts$MDS3, col = mds3.I.pts$Col)
 ```
-
 
 
 ##Stacked richness column plots for Lake Toolibin
