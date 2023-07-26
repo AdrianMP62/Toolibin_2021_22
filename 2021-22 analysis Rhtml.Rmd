@@ -15,6 +15,9 @@ editor_options:
     wrap: 72
 ---
 
+
+
+
 ```{r, echo=FALSE, include = FALSE}
 packages <- c("RColorBrewer","stringr","rstudioapi","patchwork","glue","ClassDiscovery","vegan","tidyverse","lubridate","ggplot2","ggpubr","stringi","factoextra", "zoo","cluster","reshape2","ggthemes","data.table")
 lapply(packages, require, character.only=TRUE)
