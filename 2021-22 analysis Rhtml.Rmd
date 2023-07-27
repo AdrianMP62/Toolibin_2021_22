@@ -809,7 +809,9 @@ mds3.I.pts$MDS2B <- mds3.I.pts$MDS2 + 1.0
 mds3.I.pts$MDS3B <- mds3.I.pts$MDS3 + 1.0
 
 
-plot3d(x = mds3.I.pts$MDS1, y = mds3.I.pts$MDS2, size=12, z = mds3.I.pts$MDS3, col = mds3.I.pts$Col, pch=19, type="p")
+plot3d(x = mds3.I.pts$MDS1, y = mds3.I.pts$MDS2, size=12, z = mds3.I.pts$MDS3, col = mds3.I.pts$Col, cex=12, pch=19, type="p", xlim=c(-1.0, 1.0), ylim=c(-1.0, 1.0), zlim=c(-1.0, 1.0))
+
+scatterplot3d(mds3.I.pts$MDS1,mds3.I.pts$MDS2,mds3.I.pts$MDS3, pch=16, cex.symbols=2, color = mds3.I.pts$Col, type="h", angle=45, xlim=c(-1.0, 1.0), ylim=c(-1.0, 1.0), zlim=c(-1.0, 1.0))
 ```
 
 
