@@ -792,6 +792,7 @@ mds3.I.pts$Col <- replace(mds3.I.pts$Col, mds3.I.pts$Col == "Reference", "green"
 mds3.I.pts$Col <- as.factor(mds3.I.pts$Col)
 ```
 
+
 #ordination plot
 ```{r fig.align = 'center'}
 #first set axis limits based on maximum values of coordinates
