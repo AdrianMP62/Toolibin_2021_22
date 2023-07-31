@@ -839,18 +839,21 @@ plot_ly(color = ~factor(vs), showlegend = F) %>%
   add_markers(data = mtcars, x = ~disp, y = ~wt, z = ~mpg) %>%
   add_paths(data = m, x = ~disp, y = ~wt, z = ~mpg)
 
+
+To get this to work need to convert mds3.I.pts$wetland to numeric (1,2,3)
+
 mds3.I.pts$id <- seq_len(nrow(mds3.I.pts))
-ms <- replicate(2, mtcars, simplify = F)
-ms[[2]]$mpg <- 0
+ms <- replicate(2, mds3.I.pts, simplify = F)
+ms[[2]]$MDS3B <- 0
 m <- ms %>%
   bind_rows() %>%
-  group2NA("id", "vs")
+  group2NA("id", "wetland")
 
-plot_ly(color = ~factor(vs), showlegend = F) %>%
-  add_markers(data = mtcars, x = ~disp, y = ~wt, z = ~mpg) %>%
-  add_paths(data = m, x = ~disp, y = ~wt, z = ~mpg)
+plot_ly(color = I("black"), showlegend = F) %>%
+  add_markers(data = mds3.I.pts, x = ~MDS1B, y = ~MDS2B, z = ~MDS3B) %>%
+  add_paths(data = m, x = ~MDS1B, y = ~MDS2B, z = ~MDS3B)
 
-
+str(m)
 
 ```
 
