@@ -16,7 +16,7 @@ editor_options:
 ---
 
 ```{r, echo=FALSE, include = FALSE}
-packages <- c("scatterplot3d","RColorBrewer","stringr","rstudioapi","patchwork","glue","ClassDiscovery","vegan","tidyverse","lubridate","ggplot2","ggpubr","stringi","factoextra", "zoo","cluster","rgl","reshape2","ggthemes","data.table")
+packages <- c("mtcars","dplyr","scatterplot3d","plotly","RColorBrewer","stringr","rstudioapi","patchwork","glue","ClassDiscovery","vegan","tidyverse","lubridate","ggplot2","ggpubr","stringi","factoextra", "zoo","cluster","rgl","reshape2","ggthemes","data.table")
 lapply(packages, require, character.only=TRUE)
 ```
 
@@ -810,10 +810,53 @@ mds3.I.pts$MDS2B <- mds3.I.pts$MDS2 + 1.0
 mds3.I.pts$MDS3B <- mds3.I.pts$MDS3 + 1.0
 
 
-plot3d(x = mds3.I.pts$MDS1, y = mds3.I.pts$MDS2, size=12, z = mds3.I.pts$MDS3, col = mds3.I.pts$Col, cex=12, pch=19, type="p", xlim=c(-1.0, 1.0), ylim=c(-1.0, 1.0), zlim=c(-1.0, 1.0))
+plot3d(x = mds3.I.pts$MDS1B, y = mds3.I.pts$MDS2B, size=12, z = mds3.I.pts$MDS3B, col = mds3.I.pts$Col, cex=12, pch=16, type="h") 
+
+xlim=c(-1.0, 1.0), ylim=c(-1.0, 1.0), zlim=c(-1.0, 1.0))
 
 scatterplot3d(mds3.I.pts$MDS1,mds3.I.pts$MDS2,mds3.I.pts$MDS3, pch=16, cex.symbols=2, color = mds3.I.pts$Col, type="h", angle=45, xlim=c(-1.0, 1.0), ylim=c(-1.0, 1.0), zlim=c(-1.0, 1.0))
+
+
+mds3.I.pts$id <- seq_len(nrow(mds3.I.pts))
+ms <- replicate(2, mtcars, simplify = F)
+ms[[2]]$mpg <- 0
+m <- ms %>%
+  bind_rows() %>%
+  group2NA("id", "vs")
+
+plot_ly(color = I("black"), showlegend = F) %>%
+  add_markers(data = mds3.I.pts, x = ~MDS1, y = ~MDS2, z = ~MDS3) %>%
+  add_paths(data = m, x = ~disp, y = ~wt, z = ~mpg)
+
+mtcars$id <- seq_len(nrow(mtcars))
+ms <- replicate(2, mtcars, simplify = F)
+ms[[2]]$mpg <- 0
+m <- ms %>%
+  bind_rows() %>%
+  group2NA("id", "vs")
+
+plot_ly(color = ~factor(vs), showlegend = F) %>%
+  add_markers(data = mtcars, x = ~disp, y = ~wt, z = ~mpg) %>%
+  add_paths(data = m, x = ~disp, y = ~wt, z = ~mpg)
+
+mds3.I.pts$id <- seq_len(nrow(mds3.I.pts))
+ms <- replicate(2, mtcars, simplify = F)
+ms[[2]]$mpg <- 0
+m <- ms %>%
+  bind_rows() %>%
+  group2NA("id", "vs")
+
+plot_ly(color = ~factor(vs), showlegend = F) %>%
+  add_markers(data = mtcars, x = ~disp, y = ~wt, z = ~mpg) %>%
+  add_paths(data = m, x = ~disp, y = ~wt, z = ~mpg)
+
+
+
 ```
+
+
+
+
 
 
 ##Stacked richness column plots for Lake Toolibin
