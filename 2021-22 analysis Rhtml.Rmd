@@ -839,7 +839,7 @@ plot_ly(color = ~factor(vs), showlegend = F) %>%
   add_markers(data = mtcars, x = ~disp, y = ~wt, z = ~mpg) %>%
   add_paths(data = m, x = ~disp, y = ~wt, z = ~mpg)
 
-
+See https://community.plotly.com/t/droplines-from-points-in-3d-scatterplot/4113
 To get this to work need to convert mds3.I.pts$wetland to numeric (1,2,3)
 
 mds3.I.pts$id <- seq_len(nrow(mds3.I.pts))
