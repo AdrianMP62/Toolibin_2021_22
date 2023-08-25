@@ -137,7 +137,7 @@ plot(Tool.SA3)
 All multivariate analyses are performed on Helinger transformed abundance data (within species abundances scaled to values between 0 and 1 and square root transformed).
 
 ```{r}
-comdata <- subset(rawdata, RICHNESS > 1)# select= VISIT_DATE:YBSPOONBILL)#SHOVELER:YBSPOONBILL
+comdata <- subset(rawdata, RICHNESS > 1)
 comdata.fact <- comdata[, 1:5] #create file with factors
 comdata.fact$Survey <- row.names(comdata.fact)
 comdata <- comdata[, -(1:5)] #remove factors from data file
@@ -152,9 +152,7 @@ comdata.hel<-decostand(comdata,"hellinger") # create helinger transformed matrix
 mds1 <- metaMDS(comdata.hel, distance ="bray", k=2) #nMDS in 2 dimensions
 ```
 
-A two-dimensional ordination had unacceptably high stress value
-(`r round(mds1$stress, digits=2)`) so a 3 dimensional ordination was run
-with stress `r round(mds2$stress, digits=2)`
+This two-dimensional ordination had unacceptably high stress value (`r round(mds1$stress, digits=2)`) so a 3 dimensional ordination was run with stress `r round(mds2$stress, digits=2)`
 
 ```{r include=FALSE}
 mds2 <- metaMDS(comdata.hel, distance = "bray", k=3) #nMDS in 3 dimensions
