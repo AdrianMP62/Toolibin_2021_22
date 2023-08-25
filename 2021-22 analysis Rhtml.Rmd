@@ -62,7 +62,7 @@ surveyed the whole of the lake and seen all species, and species
 richness.
 
 ```{r}
-rawdata <- read.csv("./Data/Allsurveys18.csv", row.names = 1) #retain 'rawdata' as an unmodified waterbird import
+rawdata <- read.csv("./Data/Allsurveys18 2.csv", row.names = 1) #retain 'rawdata' as an unmodified waterbird import
 rawdata$VISIT_DATE <- as.Date(rawdata$VISIT_DATE, "%d/%m/%Y") #convert waterbird survey date to R date format
 ```
 
@@ -86,8 +86,7 @@ dates <- as.factor(rawdata2$date2)
 ggplot(data = rawdata2) + geom_col(mapping = aes(x=reorder(date2, order), y = RICHNESS, fill = Period)) + xlab("Survey") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold"))
 ```
 
-##scatterplots by period with colour dem=noting whether all species
-likely observed
+##scatterplots by period with colour denoting whether all species likely observed
 
 ```{r}
 rawdata3 <- rawdata
@@ -101,6 +100,18 @@ rawdata3.T$colour <- paste(rawdata3.T$ALL_SPECIES, rawdata3.T$Depthcat)
 rawdata3.T$colour <- if_else(rawdata3.T$colour == "A D", "AD", "OT")
 ggplot(data = rawdata3.T, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colour = colour, alpha = 0.2), size=8, width = 0.05, height = 0.05) + xlab("Period") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(legend.position="none")
 
+#Walbyring scatterplot
+rawdata3.W <- filter(rawdata3, wetland == "W")
+rawdata3.W$Depthcat <- if_else(rawdata3.W$DEPTH >0.3, "D", "S")
+rawdata3.W$colour <- paste(rawdata3.W$ALL_SPECIES, rawdata3.W$Depthcat)
+rawdata3.W$colour <- if_else(rawdata3.W$colour == "A D", "AD", "OT")
+ggplot(data = rawdata3.W, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colour = colour, alpha = 0.2), size=8, width = 0.05, height = 0.05) + xlab("Period") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(legend.position="none")
+
+```
+
+##species accumulation plots
+
+```{r}
 #Toolibin species accumulation for 1975+1980s with all surveys - NEED TO REPEAT WITH JUST DEPTH >0.3M
 rawdata.T.SA <- rawdata3.T
 rawdata.T.SA <- rawdata.T.SA[, -c(1:5,48:50)]
@@ -118,11 +129,9 @@ rawdata.T.SA2 <- rawdata.T.SA2[, -c(1:5,48:50)]
 rawdata.T.SA2 <- rawdata.T.SA2[-grep("TM", rownames(rawdata.T.SA2)), ]
 rawdata.T.SA2 <- rawdata.T.SA2 %>% replace(is.na(.), 0)
 rawdata.T.SA2 <-as.data.frame(rawdata.T.SA2)
-rawdata.T.SA2[] <- lapply(rawdata.T.SA2, as.numeric)
+rawdata.T.SA2 <- lapply(rawdata.T.SA2, as.numeric)
 Tool.SA2 <- specaccum(rawdata.T.SA2, "random", permutations = 100)
 plot(Tool.SA2)
-
-
 
 #Toolibin species accumulation for 1975+1980s with only 'A' surveys
 rawdata.T.A.SA <- filter(rawdata3.T, ALL_SPECIES == "A")
@@ -133,18 +142,11 @@ rawdata.T.A.SA <-as.data.frame(rawdata.T.A.SA)
 rawdata.T.A.SA[] <- lapply(rawdata.T.A.SA, as.numeric)
 Tool.SA <- specaccum(rawdata.T.A.SA, "random", permutations = 100)
 plot(Tool.SA)
-
-#Walbyring
-rawdata3.W <- filter(rawdata3, wetland == "W")
-ggplot(data = rawdata3.W, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colour = ALL_SPECIES, alpha = 0.2), size=8, width = 0.05, height = 0.05) + xlab("Period") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(legend.position="none")
-
 ```
 
-All multivariate analyses are performed on Helinger transformed
-abundance data (within species abundances scaled to values between 0 and
-1 and square root transformed).
+## Analyses including all surveys (from both lakes) with richness >1 to remove an outlier identified in the 2019 analyses)
 
-## Analyses including all surveys (from both lakes) with richness \>1 ( to remove an outlier identified in the 2019 analyses)
+All multivariate analyses are performed on Helinger transformed abundance data (within species abundances scaled to values between 0 and 1 and square root transformed).
 
 ```{r}
 comdata <- subset(rawdata, RICHNESS > 1)# select= VISIT_DATE:YBSPOONBILL)#SHOVELER:YBSPOONBILL
@@ -157,17 +159,19 @@ comdata.pa<-decostand(comdata,"pa") #create presence/absence matrix
 comdata.hel<-decostand(comdata,"hellinger") # create helinger transformed matrix
 ```
 
+
+2D nmds analyses
 ```{r include=FALSE}
 mds1 <- metaMDS(comdata.hel, distance ="bray", k=2) #nMDS in 2 dimensions
-```
-
-```{r include=FALSE}
-mds2 <- metaMDS(comdata.hel, distance = "bray", k=3) #nMDS in 3 dimensions
 ```
 
 A two-dimensional ordination had unacceptably high stress value
 (`r round(mds1$stress, digits=2)`) so a 3 dimensional ordination was run
 with stress `r round(mds2$stress, digits=2)`
+
+```{r include=FALSE}
+mds2 <- metaMDS(comdata.hel, distance = "bray", k=3) #nMDS in 3 dimensions
+```
 
 ```{r}
 #Extract mds2 coordinates and create new dataframe with coordinates, survey, and survey period
@@ -219,7 +223,7 @@ Xmin <- min(mds3.pts$MDS1)*1.2
 Xmax <- max(mds3.pts$MDS1)*1.2
 Ymin <- min(mds3.pts$MDS2)*1.2
 Ymax <- max(mds3.pts$MDS2)*1.2
-ggplot(mds3.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period, size=Depth^2)) + coord_fixed(ratio = 1), size=3, vjust=1, hjust=1.3)
+ggplot(mds3.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period, size=Depth^2)) + coord_fixed(ratio = 1)
 ```
 
 <!-- cluster analysis and contingency table -->
@@ -587,7 +591,7 @@ ggplot(melt_comdataRT_o, aes(Var2, Var1)) +
 ```{r}
 #setup datafile for histograms including colours
 comdataRT.h <- comdataRT
-comdataRT.h$order <- c(1:39) #create variable for ordering dates correctly in histograms
+comdataRT.h$order <- c(1:40) #create variable for ordering dates correctly in histograms
 comdataRT.h$date <- comdataRT.fact$VISIT_DATE
 comdataRT.h$kmgrp <- comdataRT.fact$kmgrpsRT #add in km groups
 comdataRT.h$kmgrpcol <- comdataRT.h$kmgrp #copy km groups for conversion to colours
