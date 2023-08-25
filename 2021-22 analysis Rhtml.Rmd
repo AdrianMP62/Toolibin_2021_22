@@ -51,37 +51,25 @@ collected from both lakes in 1992 (Doupe and Horwitz, 1995), 1996 (Halse
 (2019) analyses of waterbirds and invertebrates to include the 2021/22
 data.
 
-
-
 # Waterbird Analyses
 
-The waterbird data input files include depth at time of survey, visit
-date, period (1980s, 1996, 2017 and 2021/22), an indication
-(ALL_SPECIES) of whether the observers thought they had adequately
-surveyed the whole of the lake and seen all species, and species
-richness.
+The waterbird data input files include depth at time of survey, visit date, period (1980s, 1996, 2017 and 2021/22), an indication (A = ALL_SPECIES) of whether the observers thought they had adequately surveyed the whole of the lake and seen all species, and species richness.
 
 ```{r}
 rawdata <- read.csv("./Data/Allsurveys18 2.csv", row.names = 1) #retain 'rawdata' as an unmodified waterbird import
 rawdata$VISIT_DATE <- as.Date(rawdata$VISIT_DATE, "%d/%m/%Y") #convert waterbird survey date to R date format
 ```
 
-Data format:
-
-```{r}
-rawdata[1:5, 1:7]
-```
-
-##Column plots for richness - using only survey dates where observers
-thought all species counted and depth \>=0.3m
+##Column plots for richness - using only survey dates where observers thought all species counted and depth >=0.3m
 
 ```{r}
 rawdata2 <- rawdata
 rawdata2$wetland <- row.names(rawdata2)
 rawdata2$wetland <- str_sub(rawdata2$wetland,1,1)
+#subset data to surveys where all species thought to have been seen, depth >0.299m and Lake Toolibin only
 rawdata2 <- filter(rawdata2, ALL_SPECIES == "A" & DEPTH > 0.299 & wetland == "T")
-rawdata2$order <- 1:nrow(rawdata2) 
-rawdata2$date2 <- format(rawdata2$VISIT_DATE, "%h-%Y")
+rawdata2$order <- 1:nrow(rawdata2) #create a new variable for original sample order
+rawdata2$date2 <- format(rawdata2$VISIT_DATE, "%h-%Y") 
 dates <- as.factor(rawdata2$date2)
 ggplot(data = rawdata2) + geom_col(mapping = aes(x=reorder(date2, order), y = RICHNESS, fill = Period)) + xlab("Survey") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold"))
 ```
@@ -95,9 +83,9 @@ rawdata3$wetland <- str_sub(rawdata3$wetland,1,1)
 
 #Toolibin scatterplot
 rawdata3.T <- filter(rawdata3, wetland == "T")
-rawdata3.T$Depthcat <- if_else(rawdata3.T$DEPTH >0.3, "D", "S")
-rawdata3.T$colour <- paste(rawdata3.T$ALL_SPECIES, rawdata3.T$Depthcat)
-rawdata3.T$colour <- if_else(rawdata3.T$colour == "A D", "AD", "OT")
+rawdata3.T$Depthcat <- if_else(rawdata3.T$DEPTH >0.299, "D", "S") #D = deep, S = shallow
+rawdata3.T$colour <- paste(rawdata3.T$ALL_SPECIES, rawdata3.T$Depthcat) #new variable (colour) for depth and completeness of surveys
+rawdata3.T$colour <- if_else(rawdata3.T$colour == "A D", "AD", "OT") #rescore colour to be "deep and complete (AD)" or other (OT)
 ggplot(data = rawdata3.T, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colour = colour, alpha = 0.2), size=8, width = 0.05, height = 0.05) + xlab("Period") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(legend.position="none")
 
 #Walbyring scatterplot
@@ -112,36 +100,36 @@ ggplot(data = rawdata3.W, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colou
 ##species accumulation plots
 
 ```{r}
-#Toolibin species accumulation for 1975+1980s with all surveys - NEED TO REPEAT WITH JUST DEPTH >0.3M
-rawdata.T.SA <- rawdata3.T
-rawdata.T.SA <- rawdata.T.SA[, -c(1:5,48:50)]
-rawdata.T.SA <- rawdata.T.SA[-grep("TM", rownames(rawdata.T.SA)), ]
+#Toolibin species accumulation for 1975+1980s with all surveys - NEED TO REPEAT WITH JUST DEPTH >0.3M and complete surveys
+rawdata.T.SA <- rawdata3.T #use data from Toolibin scatterplots above
+rawdata.T.SA <- rawdata.T.SA[, -c(1:5,48:50)] #delete columns with factors
+rawdata.T.SA <- rawdata.T.SA[-grep("TM", rownames(rawdata.T.SA)), ] #remove 1996+ data, denoted by TM in survey names
 rawdata.T.SA <- rawdata.T.SA %>% replace(is.na(.), 0)
 rawdata.T.SA <-as.data.frame(rawdata.T.SA)
 rawdata.T.SA[] <- lapply(rawdata.T.SA, as.numeric)
 Tool.SA <- specaccum(rawdata.T.SA, "random", permutations = 100)
 plot(Tool.SA)
 
-#Toolibin species accumulation for 1975+1980s with all surveys - NEED TO REPEAT WITH JUST DEPTH >0.3M
+#Toolibin species accumulation for 1975+1980s with only complete surveys in deeper water
 rawdata.T.SA2 <- rawdata3.T
 rawdata.T.SA2 <- rawdata.T.SA2[rawdata.T.SA2$colour == "AD", ]
 rawdata.T.SA2 <- rawdata.T.SA2[, -c(1:5,48:50)]
 rawdata.T.SA2 <- rawdata.T.SA2[-grep("TM", rownames(rawdata.T.SA2)), ]
 rawdata.T.SA2 <- rawdata.T.SA2 %>% replace(is.na(.), 0)
 rawdata.T.SA2 <-as.data.frame(rawdata.T.SA2)
-rawdata.T.SA2 <- lapply(rawdata.T.SA2, as.numeric)
+rawdata.T.SA2[] <- lapply(rawdata.T.SA, as.numeric)
 Tool.SA2 <- specaccum(rawdata.T.SA2, "random", permutations = 100)
 plot(Tool.SA2)
 
-#Toolibin species accumulation for 1975+1980s with only 'A' surveys
-rawdata.T.A.SA <- filter(rawdata3.T, ALL_SPECIES == "A")
-rawdata.T.A.SA <- rawdata.T.A.SA[, -c(1:5,48)]
-rawdata.T.A.SA <- rawdata.T.A.SA[-grep("TM", rownames(rawdata.T.A.SA)), ]
-rawdata.T.A.SA <- rawdata.T.A.SA %>% replace(is.na(.), 0)
-rawdata.T.A.SA <-as.data.frame(rawdata.T.A.SA)
-rawdata.T.A.SA[] <- lapply(rawdata.T.A.SA, as.numeric)
-Tool.SA <- specaccum(rawdata.T.A.SA, "random", permutations = 100)
-plot(Tool.SA)
+#Toolibin species accumulation for 1975+1980s with only 'A' surveys but all depths
+rawdata.T.SA3 <- filter(rawdata3.T, ALL_SPECIES == "A")
+rawdata.T.SA3 <- rawdata.T.SA3[, -c(1:5,48)]
+rawdata.T.SA3 <- rawdata.T.SA3[-grep("TM", rownames(rawdata.T.SA3)), ]
+rawdata.T.SA3 <- rawdata.T.A.SA3 %>% replace(is.na(.), 0)
+rawdata.T.SA3 <-as.data.frame(rawdata.T.SA3)
+rawdata.T.SA3[] <- lapply(rawdata.T.SA3, as.numeric)
+Tool.SA3 <- specaccum(rawdata.T.SA3, "random", permutations = 100)
+plot(Tool.SA3)
 ```
 
 ## Analyses including all surveys (from both lakes) with richness >1 to remove an outlier identified in the 2019 analyses)
@@ -158,7 +146,6 @@ comdata[is.na(comdata)]<-0 # replace na with 0
 comdata.pa<-decostand(comdata,"pa") #create presence/absence matrix
 comdata.hel<-decostand(comdata,"hellinger") # create helinger transformed matrix
 ```
-
 
 2D nmds analyses
 ```{r include=FALSE}
@@ -180,8 +167,7 @@ mds2.pts$Survey <- row.names(mds2.pts)
 mds2.pts$Period <- comdata.fact[match(mds2.pts$Survey, comdata.fact$Survey), 2] #column '2' has 'Period'
 ```
 
-Below is a plot of axes 1 v 2 of the 3D ordination, showing all of the
-1996 to 2022 surveys on the edge of the 1980s surveys.
+Below is a plot of axes 1 v 2 of the 3D ordination, showing all of the 1975 to 2022 surveys on the edge of the 1980s surveys.
 
 ```{r fig.align = 'center'}
 #first set axis limits based on maximum values of coordinates
@@ -241,6 +227,26 @@ comprehensive. To try to account for this difference in effort and
 conditions, the next analyses use only surveys where at least 10 species
 were seen (indicating a reasonable survey effort) and depth was moderate
 to high (\>0.3m).
+
+##Repeat ordinations but with the five comprehensive surveys and 1996 to 2022 data only
+
+```{r}
+comdata.T <- rawdata
+comdata.T$wetland <- row.names(comdata.T)
+comdata.T$wetland <- str_sub(comdata.T$wetland,1,1)
+comdata.T <- filter(comdata.T, wetland == "T")
+comdata.T <- subset(comdata.T, RICHNESS > 1)
+comdata.T.fact <- comdata.T[, c(1:5,48)] #create file with factors
+comdata.T.fact$Survey <- row.names(comdata.T.fact)
+comdata.T <- comdata.T[, -c(1:5,48)] #remove factors from data file
+comdata.T[is.na(comdata.T)]<-0 # replace na with 0
+comdata.T.pa<-decostand(comdata.T,"pa") #create presence/absence matrix
+comdata.T.hel<-decostand(comdata.T.pa,"hellinger") # create helinger transformed matrix
+```
+
+
+
+
 
 ## Analyses with surveys that recorded 10 or more species and depth \>0.3m
 
