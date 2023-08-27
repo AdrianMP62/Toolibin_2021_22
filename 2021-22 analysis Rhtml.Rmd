@@ -71,7 +71,7 @@ rawdata2 <- filter(rawdata2, ALL_SPECIES == "A" & DEPTH > 0.299 & wetland == "T"
 rawdata2$order <- 1:nrow(rawdata2) #create a new variable for original sample order
 rawdata2$date2 <- format(rawdata2$VISIT_DATE, "%h-%Y") 
 dates <- as.factor(rawdata2$date2)
-ggplot(data = rawdata2) + geom_col(mapping = aes(x=reorder(date2, order), y = RICHNESS, fill = Period)) + xlab("Survey") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold"))
+ggplot(data = rawdata2) + geom_col(mapping = aes(x=reorder(date2, order), y = RICHNESS, fill = Period)) + xlab("Survey") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(axis.text.x = element_text(angle = 90))
 ```
 
 ##scatterplots by period with colour denoting whether all species likely observed
@@ -177,10 +177,10 @@ Ymax <- max(mds2.pts$MDS2)*1.2
 ggplot(mds2.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period), size=5) + coord_fixed(ratio = 1)
 ```
 
-####Ordination analyses with just surveys that were considered complete and depth >=0.3m
+####Ordination analyses with just surveys that were considered complete and depth >=0.6m
 
 ```{r eval = FALSE}
-comdataA <- rawdata[rawdata$ALL_SPECIES=="A" & rawdata$DEPTH > 0.299, ]
+comdataA <- rawdata[rawdata$RICHNESS >1 & rawdata$ALL_SPECIES=="A" & rawdata$DEPTH > 0.599, ]
 comdataA.fact <- comdataA[, 1:5] #seperate out factors
 comdataA.fact$Survey <- row.names(comdataA.fact)
 comdataA <- comdataA[, -(1:5)] #remove factors from data file
@@ -220,7 +220,7 @@ Very few of the surveys undertaken in the 1980s were believed by the observers t
 conditions, the next analyses use only surveys where at least 10 species were seen (indicating a reasonable survey effort) and depth was moderate to high (\>0.3m).
 
 
-###Analyses with surveys that recorded 10 or more species and depth \>0.3m
+###Analyses with surveys that recorded 10 or more species and depth >=0.6m
 
 ```{r}
 comdataR <- rawdata[rawdata$RICHNESS > 9 & rawdata$DEPTH > 0.3, ]
@@ -343,21 +343,21 @@ plotColoredClusters(comdataR.upgma, comdataR.fact$VISIT_DATE, comdataR.fact$APer
 When just the Toolibin Surveys are considered, an ordination plot still shows the 1996 to 2022 surveys on the edge of the 1980s point cloud.
 
 ```{r}
-comdataRT <- rawdata[rawdata$RICHNESS > 9 & rawdata$DEPTH > 0.3, ]
-comdataRT[is.na(comdataRT)]<-0 # replace na with 0
+comdataRT <- rawdata[rawdata$RICHNESS > 0, ]
+comdataRT[is.na(comdataRT)] <- 0 # replace na with 0
 comdataRT <- comdataRT[grep("^T", row.names(comdataRT)),] #extracts Toolibin
 comdataRT.fact <- comdataRT[, 1:5]
 comdataRT.fact$Survey <- row.names(comdataRT.fact)
 comdataRT.fact$YM <- format(as.Date(comdataRT.fact$VISIT_DATE), "%m-%y")
 comdataRT <- comdataRT[, -(1:5)] #remove factors from data file
 comdataRT <- comdataRT[, colSums(comdataRT) != 0]
-comdataRT.pa<-decostand(comdataRT,"pa") #create presence/absence matrix
-comdataRT.hel<-decostand(comdataRT,"hellinger") # create helinger transformed matrix
+comdataRT.pa <-decostand(comdataRT,"pa") #create presence/absence matrix
+comdataRT.hel <-decostand(comdataRT,"hellinger") # create helinger transformed matrix
 comdataRT.sqrt <- sqrt(comdataRT)
 ```
 
 ```{r include=FALSE}
-mds5<-metaMDS(comdataRT.hel, distance="bray", k=3) #nMDS in 3 dimensions
+mds5<-metaMDS(comdataRT.hel, distance="bray", k=2) #nMDS in 3 dimensions
 ```
 
 ```{r}
@@ -381,6 +381,50 @@ Xmax <- max(mds5.pts$MDS1)*1.2
 Ymin <- min(mds5.pts$MDS2)*1.2
 Ymax <- max(mds5.pts$MDS2)*1.2
 ggplot(mds5.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period), size=6, alpha=0.5) + coord_fixed(ratio = 1) + geom_text(aes(label=YM), size=3, vjust=1, hjust=1.3)
+```
+
+
+###Repeated with only sites well surveyd with depth >=0.6m
+
+```{r}
+comdataRTA <- rawdata[rawdata$ALL_SPECIES == "A" & rawdata$DEPTH > 0.599, ]
+comdataRTA[is.na(comdataRTA)]<-0 # replace na with 0
+comdataRTA <- comdataRTA[grep("^T", row.names(comdataRTA)),] #extracts Toolibin
+comdataRTA.fact <- comdataRTA[, 1:5]
+comdataRTA.fact$Survey <- row.names(comdataRTA.fact)
+comdataRTA.fact$YM <- format(as.Date(comdataRTA.fact$VISIT_DATE), "%m-%y")
+comdataRTA <- comdataRTA[, -(1:5)] #remove factors from data file
+comdataRTA <- comdataRTA[, colSums(comdataRTA) != 0]
+comdataRTA.pa<-decostand(comdataRTA,"pa") #create presence/absence matrix
+comdataRTA.hel<-decostand(comdataRTA,"hellinger") # create helinger transformed matrix
+comdataRTA.sqrt <- sqrt(comdataRTA)
+```
+
+```{r include=FALSE}
+mds6<-metaMDS(comdataRTA.hel, distance="bray", k=3) #nMDS in 3 dimensions
+```
+
+```{r}
+#Extract mds points and add factors
+  mds6.pts <- as.data.frame(mds6$points) #extract 2D ordination coordinates (points)
+  mds6.pts$Survey <- row.names(comdataRTA.fact) #use survey period as row.names
+  mds6.pts$YM <- comdataRTA.fact$YM #add YearMonth for labelling
+  mds6.pts$Period <- comdataRTA.fact$Period
+  mds6.pts$Depth <- comdataRTA.fact$DEPTH
+  #mds5.pts$Period <- comdataRT.fact[match(row.names(mds5.pts), row.names(comdataRT.fact)), 2]
+  #mds5.pts$Depth <- comdataRT.fact[match(row.names(mds5.pts), row.names(comdataRT.fact)), 4]
+```
+
+Axes 1 v 2 of a 3D ordination with stress
+`r round(mds5$stress, digits=3)` showing the 1 x 1996, 2 x 2017 and 2 x
+2021-22 surveys on the edge of the 1980s surveys.
+
+```{r fig.align = 'center'}
+Xmin <- min(mds6.pts$MDS1)*1.2
+Xmax <- max(mds6.pts$MDS1)*1.2
+Ymin <- min(mds6.pts$MDS2)*1.2
+Ymax <- max(mds6.pts$MDS2)*1.2
+ggplot(mds6.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period), size=6, alpha=0.5) + coord_fixed(ratio = 1) + geom_text(aes(label=YM), size=3, vjust=1, hjust=1.3)
 ```
 
 A kmeans cluster analysis with six groups places all 5 of the 1996 to
