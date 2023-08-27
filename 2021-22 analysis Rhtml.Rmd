@@ -123,16 +123,18 @@ plot(Tool.SA2)
 
 #Toolibin species accumulation for 1975+1980s with only 'A' surveys but all depths
 rawdata.T.SA3 <- filter(rawdata3.T, ALL_SPECIES == "A")
-rawdata.T.SA3 <- rawdata.T.SA3[, -c(1:5,48)]
+rawdata.T.SA3 <- rawdata.T.SA3[, -c(1:5,48:50)]
 rawdata.T.SA3 <- rawdata.T.SA3[-grep("TM", rownames(rawdata.T.SA3)), ]
-rawdata.T.SA3 <- rawdata.T.A.SA3 %>% replace(is.na(.), 0)
+rawdata.T.SA3 <- rawdata.T.SA3 %>% replace(is.na(.), 0)
 rawdata.T.SA3 <-as.data.frame(rawdata.T.SA3)
 rawdata.T.SA3[] <- lapply(rawdata.T.SA3, as.numeric)
 Tool.SA3 <- specaccum(rawdata.T.SA3, "random", permutations = 100)
 plot(Tool.SA3)
 ```
 
-## Analyses including all surveys (from both lakes) with richness >1 to remove an outlier identified in the 2019 analyses)
+##Multivariate analyses
+
+###Analyses including all surveys (from both lakes) with richness >1 to remove an outlier identified in the 2019 analyses)
 
 All multivariate analyses are performed on Helinger transformed abundance data (within species abundances scaled to values between 0 and 1 and square root transformed).
 
@@ -147,7 +149,6 @@ comdata.pa<-decostand(comdata,"pa") #create presence/absence matrix
 comdata.hel<-decostand(comdata,"hellinger") # create helinger transformed matrix
 ```
 
-2D nmds analyses
 ```{r include=FALSE}
 mds1 <- metaMDS(comdata.hel, distance ="bray", k=2) #nMDS in 2 dimensions
 ```
@@ -165,7 +166,7 @@ mds2.pts$Survey <- row.names(mds2.pts)
 mds2.pts$Period <- comdata.fact[match(mds2.pts$Survey, comdata.fact$Survey), 2] #column '2' has 'Period'
 ```
 
-Below is a plot of axes 1 v 2 of the 3D ordination, showing all of the 1975 to 2022 surveys on the edge of the 1980s surveys.
+Below is a plot of axes 1 v 2 of the 3D ordination, showing all of the 1996 to 2022 surveys on the edge of the 1975 and 1980s surveys.
 
 ```{r fig.align = 'center'}
 #first set axis limits based on maximum values of coordinates
@@ -176,10 +177,10 @@ Ymax <- max(mds2.pts$MDS2)*1.2
 ggplot(mds2.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period), size=5) + coord_fixed(ratio = 1)
 ```
 
-<!-- Analyses including only surveys where 1) observers believed they had counted all birds present (All_SPECIES = A), depth > 0 and  richness >1 -->
+####Ordination analyses with just surveys that were considered complete and depth >=0.3m
 
 ```{r eval = FALSE}
-comdataA <- rawdata[rawdata$ALL_SPECIES=="A" & rawdata$DEPTH > 0, ]
+comdataA <- rawdata[rawdata$ALL_SPECIES=="A" & rawdata$DEPTH > 0.299, ]
 comdataA.fact <- comdataA[, 1:5] #seperate out factors
 comdataA.fact$Survey <- row.names(comdataA.fact)
 comdataA <- comdataA[, -(1:5)] #remove factors from data file
@@ -187,8 +188,6 @@ comdataA[is.na(comdataA)]<-0 # replace na with 0
 comdataA.pa<-decostand(comdataA,"pa") #create presence/absence matrix
 comdataA.hel<-decostand(comdataA,"hellinger") # create helinger transformed matrix
 ```
-
-<!-- 3D ordination of heliger transformed data -->
 
 ```{r eval = FALSE}
 mds3<-metaMDS(comdataA.hel,distance="bray", k=3) #nMDS in 3 dimensions
@@ -210,43 +209,18 @@ Ymax <- max(mds3.pts$MDS2)*1.2
 ggplot(mds3.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period, size=Depth^2)) + coord_fixed(ratio = 1)
 ```
 
-<!-- cluster analysis and contingency table -->
+####Cluster analysis of just surveys considered complete
 
 ```{r eval = FALSE}
 plot(comdataA.upgma <- hclust(vegdist(comdataA.hel), method="aver"), hang=1)
 tabasco(comdataA.hel,comdataA.upgma)
 ```
 
-Very few of the surveys undertaken in the 1980s were believed by the
-observers to be complete counts or even that all species had been seen.
-The 1996 to 2022 surveys were all undertaken by boat and, while these
-still did not cover 100% of the lake, the surveys were relatively
-comprehensive. To try to account for this difference in effort and
-conditions, the next analyses use only surveys where at least 10 species
-were seen (indicating a reasonable survey effort) and depth was moderate
-to high (\>0.3m).
-
-##Repeat ordinations but with the five comprehensive surveys and 1996 to 2022 data only
-
-```{r}
-comdata.T <- rawdata
-comdata.T$wetland <- row.names(comdata.T)
-comdata.T$wetland <- str_sub(comdata.T$wetland,1,1)
-comdata.T <- filter(comdata.T, wetland == "T")
-comdata.T <- subset(comdata.T, RICHNESS > 1)
-comdata.T.fact <- comdata.T[, c(1:5,48)] #create file with factors
-comdata.T.fact$Survey <- row.names(comdata.T.fact)
-comdata.T <- comdata.T[, -c(1:5,48)] #remove factors from data file
-comdata.T[is.na(comdata.T)]<-0 # replace na with 0
-comdata.T.pa<-decostand(comdata.T,"pa") #create presence/absence matrix
-comdata.T.hel<-decostand(comdata.T.pa,"hellinger") # create helinger transformed matrix
-```
+Very few of the surveys undertaken in the 1980s were believed by the observers to be complete counts or even that all species had been seen. The 1996 to 2022 surveys were all undertaken by boat and, while these still did not cover 100% of the lake, the surveys were relatively comprehensive. To try to account for this difference in effort and
+conditions, the next analyses use only surveys where at least 10 species were seen (indicating a reasonable survey effort) and depth was moderate to high (\>0.3m).
 
 
-
-
-
-## Analyses with surveys that recorded 10 or more species and depth \>0.3m
+###Analyses with surveys that recorded 10 or more species and depth \>0.3m
 
 ```{r}
 comdataR <- rawdata[rawdata$RICHNESS > 9 & rawdata$DEPTH > 0.3, ]
@@ -286,28 +260,22 @@ Ymax <- max(mds4.pts$MDS2)*1.2
 ggplot(mds4.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period, size=Depth^2)) + coord_fixed(ratio = 1)
 ```
 
-There is not a clear pattern here of composition being related to depth.
-The plot still shows all of the 1996-2022 surveys in one part of the
-ordination and on the edge of the 1980s surveys, but not clearly
+There is not a clear pattern here of composition being related to depth. The plot still shows all of the 1996-2022 surveys in one part of the ordination and on the edge of the 1980s surveys, but not clearly
 separated from them.
 
-To better understand how the 1980s and 1996-2022 surveys compare, a
-K-means cluster was undertaken. This method groups surveys into clusters
-without imposing a hierarchical structure. First use methods to
-determine the optimal number of clusters.
+###Kmeans non-hierarchical clustering
 
-Method 1: Elbow plot. Optimal number of groups should be where the slope
-changes
+To better understand how the 1980s and 1996-2022 surveys compare, a K-means cluster was undertaken. This method groups surveys into clusters without imposing a hierarchical structure. First use methods to determine the optimal number of clusters.
+
+Method 1: Elbow plot. Optimal number of groups should be where the slope changes
 
 ```{r fig.width=4, fig.height=4, fig.align = 'center'}
 fviz_nbclust(comdataR.hel, kmeans, method = "wss")
 ```
 
-This doesnt give much of an indication of the optimal number of plots
-but there is a larger change of slope at 6.
+This doesnt give much of an indication of the optimal number of plots but there is a larger change of slope at 6.
 
-Method 2: gap statistic plot. Optimal number of groups is indicated by
-the first peak in the gap statistic value
+Method 2: gap statistic plot. Optimal number of groups is indicated by the first peak in the gap statistic value
 
 ```{r echo=FALSE, fig.width=4, fig.height=4, fig.align='center'}
 gap_stat <- clusGap(comdataR.hel,
@@ -318,20 +286,13 @@ gap_stat <- clusGap(comdataR.hel,
 fviz_gap_stat(gap_stat)
 ```
 
-This also doesnt provide much help in determining number of groups as a
-peak isnt reached within the first 10 groups.
+This also doesnt provide much help in determining number of groups as a peak isnt reached within the first 10 groups.
 
-A classic 'rule of thumb' upper bound to number of cluster groups (k) is
-square root of the number of samples (=surveys). sqrt(45) = 6.7
+A classic 'rule of thumb' upper bound to number of cluster groups (k) is square root of the number of samples (=surveys). sqrt(45) = 6.7
 
-Irrespective of the number of groups, the 1996 to 2022 surveys did not
-all group together. The closest was a 6 group classification where
-almost all of the 1996 to 2022 surveys end up in one cluster group (the
-exception being the April 2017 survey at Walbyring), grouping with a
-similar number of 1980s surveys.
+Irrespective of the number of groups, the 1996 to 2022 surveys did not all group together. The closest was a 6 group classification where almost all of the 1996 to 2022 surveys end up in one cluster group (the exception being the April 2017 survey at Walbyring), grouping with a similar number of 1980s surveys.
 
-The previous ordination overlain with the 6 kmeans groups shows the 1996
-to 2022 grouping with some 1980s surveys.
+The previous ordination overlain with the 6 kmeans groups shows the 1996 to 2022 grouping with some 1980s surveys.
 
 ```{r fig.width=4, fig.height=4, fig.align='center'}
 #run kmeans with k=6
@@ -349,19 +310,20 @@ Ymax <- max(mds4.pts$MDS2)*1.2
 ggplot(mds4.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=comdataR.fact$kmgrps), size=6, alpha = 0.5) + coord_fixed(ratio = 1) + geom_text(aes(label=comdataR.fact$YM), size=2, vjust=1, hjust=1.3)
 ```
 
-<!-- A hierarchical cluster analysis was also run. In this plot the 1996 to 2022 surveys are labelled in red. All of these except for the April 2017 surveys for Walbyring and Toolibin clustered in one group, along with some of the 1980s surveys carried out in July to November. The two April 2017 surveys clustered with two May-Jul surveys from the 1980s. -->
+A hierarchical cluster analysis was also run. In this plot the 1996 to 2022 surveys are labelled in red. All of these except for the April 2017 surveys for Walbyring and Toolibin clustered in one group, along with some of the 1980s surveys carried out in July to November. The two April 2017 surveys clustered with two May-Jul surveys from the 1980s. 
 
-<!-- ```{r echo = FALSE} -->
+```{r}
+comdataR.dist<-vegdist(comdataR.hel)
+comdataR.upgma <- hclust(comdataR.dist, method="aver")
+comdataR.fact$APeriod <- str_c(comdataR.fact$ALL_SPECIES, comdataR.fact$Period)
+comdataR.fact$APeriod.col <- comdataR.fact$APeriod
+comdataR.fact$APeriod.col <- gsub("A1996|A2017|A2021-22", 'red', comdataR.fact$APeriod.col)
+comdataR.fact$APeriod.col <- gsub("A1980s|A1975", 'green', comdataR.fact$APeriod.col)
+comdataR.fact$APeriod.col <- gsub("N1980s", 'grey', comdataR.fact$APeriod.col)
+#plot(comdataR.upgma, hang=-1)
+plotColoredClusters(comdataR.upgma, comdataR.fact$VISIT_DATE, comdataR.fact$APeriod.col, cex = 0.8, main = "", line = 0)
+```
 
-<!-- comdataR.dist<-vegdist(comdataR.hel) -->
-
-<!-- comdataR.upgma <- hclust(comdataR.dist, method="aver") -->
-
-<!-- #plot(comdataR.upgma, hang=-1) -->
-
-<!-- plotColoredClusters(comdataR.upgma, comdataR.fact$VISIT_DATE, comdataR.fact$Period.col, cex = 0.8, main = "", line = 0) -->
-
-<!-- ``` -->
 
 <!-- This plot shows the same cluster diagram with the kmeans group containing most of the 1996 to 2022 surveys highlighted. -->
 
@@ -374,7 +336,7 @@ ggplot(mds4.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom
 <!-- plotColoredClusters(comdataR.upgma, comdataR.fact$VISIT_DATE, comdataR.fact$kmgrpscol, cex = 0.8, main = "", line = 0) -->
 <!-- ``` -->
 
-## Analyses with only Lake Toolibin data with depth\>0.3m and richness 10+
+## Analyses with only Lake Toolibin data with depth>0.3m and richness 10+
 
 When just the Toolibin Surveys are considered, an ordination plot still
 shows the 1996 to 2022 surveys on the edge of the 1980s point cloud.
