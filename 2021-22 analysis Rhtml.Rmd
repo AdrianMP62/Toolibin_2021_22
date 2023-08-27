@@ -338,8 +338,9 @@ plotColoredClusters(comdataR.upgma, comdataR.fact$VISIT_DATE, comdataR.fact$APer
 
 ## Analyses with only Lake Toolibin data with depth>0.3m and richness 10+
 
-When just the Toolibin Surveys are considered, an ordination plot still
-shows the 1996 to 2022 surveys on the edge of the 1980s point cloud.
+###Toolibin using only surveys with 10+ species and depth >0.3m
+
+When just the Toolibin Surveys are considered, an ordination plot still shows the 1996 to 2022 surveys on the edge of the 1980s point cloud.
 
 ```{r}
 comdataRT <- rawdata[rawdata$RICHNESS > 9 & rawdata$DEPTH > 0.3, ]
@@ -382,26 +383,6 @@ Ymax <- max(mds5.pts$MDS2)*1.2
 ggplot(mds5.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period), size=6, alpha=0.5) + coord_fixed(ratio = 1) + geom_text(aes(label=YM), size=3, vjust=1, hjust=1.3)
 ```
 
-<!-- Plot mds5 ordination with points coloured by Period -->
-
-<!-- ```{r echo=FALSE} -->
-
-<!-- comdataRT.fact$Period_Col <- comdataRT.fact$Period -->
-
-<!-- comdataRT.fact$Period_Col <- gsub('1980s', 'grey', comdataRT.fact$Period_Col) -->
-
-<!-- comdataRT.fact$Period_Col <- gsub('1996', 'red', comdataRT.fact$Period_Col) -->
-
-<!-- comdataRT.fact$Period_Col <- gsub('2017', 'blue', comdataRT.fact$Period_Col) -->
-
-<!-- comdataRT.fact$Period_Col <- gsub('2021-22', 'green', comdataRT.fact$Period_Col) -->
-
-<!-- Period.Col <- comdataRT.fact$Period_Col -->
-
-<!-- ggplot(mds5.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=comdataRT.fact$Period), size=7, alpha=0.5) + scale_color_manual(values = c("1980s" = "grey", "1996"="orange", "2017"="blue","2021-22" = "green")) + coord_fixed(ratio = 1) + geom_text(aes(label=YM), size=3, vjust=1, hjust=1.3) -->
-
-<!-- ``` -->
-
 A kmeans cluster analysis with six groups places all 5 of the 1996 to
 2022 surveys of Lake Toolibin in one group, again with several 1980s
 surveys, as per this overlay on the ordination.
@@ -422,7 +403,7 @@ ggplot(mds5.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom
 
 ## What is different between 1980s and 1996-2022 for Lake Toolibin?
 
-<!-- A SimPer analysis was undertake to identify species differentiating communities present in the 1980s and those present in later surveys -->
+A SimPer analysis was undertaken to identify those species contributing most to differentiating communities of the kmeans group containing all of the 1996-2022 surveys from remaining 1980s sites
 
 ```{r eval=FALSE}
 comdataRT.fact$Period2 <- comdataRT.fact$Period
@@ -433,9 +414,7 @@ comdataRT.Simper <- simper(comdataRT, comdataRT.fact$Period2)
 comdataRT.Simper
 ```
 
-A SimPer analysis was undertaken to identify those species contributing
-most to differentiating communities of the kmeans group containing all
-of the 1996-2022 surveys from remaining 1980s sites
+###Produce heatmap with siurveys clustered by Kmeans
 
 ```{r include=FALSE}
 #identify the kmeans group to which the Jan 2022 survey belongs
@@ -448,7 +427,7 @@ K <- K[K != G]
 #create duplicate factor for kmeans groups
 comdataRT.fact$kmgrpsRT2 <- comdataRT.fact$kmgrpsRT
 #replace kmeans group values to distinguish the group with the 1996-2022 surveys from the other kmeans groups.
-# comdataRT.fact$kmgrpsRT2 <- gsub(G[1], 'Group one',comdataRT.fact$kmgrpsRT2)
+comdataRT.fact$kmgrpsRT2 <- gsub(G, 'Group one',comdataRT.fact$kmgrpsRT2)
 comdataRT.fact$kmgrpsRT2 <- gsub(K[1], 'Group two', comdataRT.fact$kmgrpsRT2)
 comdataRT.fact$kmgrpsRT2 <- gsub(K[2], 'Group two', comdataRT.fact$kmgrpsRT2)
 comdataRT.fact$kmgrpsRT2 <- gsub(K[3], 'Group two', comdataRT.fact$kmgrpsRT2)
@@ -456,7 +435,7 @@ comdataRT.fact$kmgrpsRT2 <- gsub(K[4], 'Group two', comdataRT.fact$kmgrpsRT2)
 comdataRT.fact$kmgrpsRT2 <- gsub(K[5], 'Group two', comdataRT.fact$kmgrpsRT2)
 comdataRT.fact$kmgrpsRT2 <- gsub('Group two', '2', comdataRT.fact$kmgrpsRT2)
 comdataRT.fact$kmgrpsRT2 <- gsub('Group one', '1', comdataRT.fact$kmgrpsRT2)
-KMgrpsRT.2grp <- data.frame(matrix(ncol = 1, nrow = 39))
+KMgrpsRT.2grp <- data.frame(matrix(ncol = 1, nrow = 40))
 colnames(KMgrpsRT.2grp) <- 'twogrps'
 KMgrpsRT.2grp$twogrps <- comdataRT.fact$kmgrpsRT2
 row.names(KMgrpsRT.2grp) <- row.names(comdataRT.fact)
@@ -467,32 +446,24 @@ KMgrpsRT.2grp$twogrps <- gsub('G2', 'grey', KMgrpsRT.2grp$twogrps)
 ```{r include=FALSE}
 #run simper
 comdataRT.Simper2 <- simper(comdataRT.hel, comdataRT.fact$kmgrpsRT2)
-```
-
-This Simper analyses suggests that the abundances of the following 12
-species best distinguish kmeans group `r G` from the remaining sites
-(accounting for 3/4 of the difference between group `r G` and remaining
-sites).
-
-```{r}
 comdataRT.Simper2
 ```
 
-<!-- heatmap with only 2 groups (group with 1996-2022 surveys, and the rest) -->
+This Simper analyses suggests that the abundances of the following 13 species best distinguish kmeans group `r G` from the remaining sites
+(accounting for 3/4 of the difference between group `r G` and remaining
+sites).
 
-<!-- ```{r echo=FALSE, warning=FALSEfig.width = 6, fig.height = 6} -->
+###heatmap with only 2 groups (group with 1996-2022 surveys, and the rest)
 
-<!-- kmgrpsRT.2grp.o <- KMgrpsRT.2grp[order(KMgrpsRT.2grp$twogrps), , drop = FALSE] #order kmgrps according to group -->
+```{r echo=FALSE, warning=FALSEfig.width = 6, fig.height = 6}
+kmgrpsRT.2grp.o <- KMgrpsRT.2grp[order(KMgrpsRT.2grp$twogrps), , drop = FALSE] #order kmgrps according to group -->
+comdataRT_o <- comdataRT.hel[order(match(row.names(comdataRT.hel), row.names(kmgrpsRT.2grp.o))), ] #reorder surveys in datafile based on k-means groups
+melt_comdataRT_o <- melt(as.matrix(comdataRT_o))
+ggplot(melt_comdataRT_o, aes(Var2, Var1)) +
+geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + theme(axis.text.y = element_text(color=kmgrpsRT.2grp.o$twogrps)) + scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey")
+```
 
-<!-- comdataRT_o <- comdataRT.hel[order(match(row.names(comdataRT.hel), row.names(kmgrpsRT.2grp.o))), ] #reorder surveys in datafile based on k-means groups -->
-
-<!-- melt_comdataRT_o <- melt(as.matrix(comdataRT_o)) -->
-
-<!-- ggplot(melt_comdataRT_o, aes(Var2, Var1)) + -->
-
-<!-- geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + theme(axis.text.y = element_text(color=kmgrpsRT.2grp.o$twogrps)) + scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey") -->
-
-<!-- ``` -->
+###heatmap with only all six kmeans groups
 
 ```{r warning=FALSE}
 kmgrpsRT.o <- kmgrpsRT[order(kmgrpsRT$kmgrpsRT), , drop = FALSE] #order kmgrps according to group
@@ -515,16 +486,7 @@ comdataRT_osqrt <- comdataRT.sqrt[order(match(row.names(comdataRT.sqrt), row.nam
 melt_comdataRT_osqrt <- melt(as.matrix(comdataRT_osqrt))
 ```
 
-This can be seen in the following heatmap of relative helinger
-transformed species abundances across the Lake Toolibin surveys, with
-K-means groups labelled in different colours. Group `r G` containing all
-of the 1996-2022 surveys is coloured `r GT`. From this it can be seen
-that k-means group `r G` is characterized by the <u>COMBINATION</u> of
-relatively high numbers of Grey Teal, Hoary-headed Grebe, Eurasian Coot
-and Pink-eared Duck (these were the species identified in the simper
-analyses), and fewer Freckled Duck, Nankeen Night Heron, Great
-Cormorant, Little Pied Cormorant, Yellow-billed Spoonbill and Great
-Egret.
+This can be seen in the following heatmap of relative helinger transformed species abundances across the Lake Toolibin surveys, with K-means groups labelled in different colours. Group `r G` containing all of the 1996-2022 surveys is coloured `r GT`. From this it can be seen that k-means group `r G` is characterized by the <u>COMBINATION</u> of relatively high numbers of Grey Teal, Hoary-headed Grebe, Eurasian Coot and Pink-eared Duck (these were the species identified in the simper analyses), and fewer Freckled Duck, Nankeen Night Heron, Great Cormorant, Little Pied Cormorant, Yellow-billed Spoonbill and Great Egret.
 
 ```{r fig.width = 8, fig.height = 9, fig.align = 'center'}
 #heatmap using helinger transformed abundance data
@@ -533,26 +495,7 @@ ggplot(melt_comdataRT_o, aes(Var2, Var1)) +
   scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey")
 ```
 
-<!-- Additional plots with raw and sqrt abundance data -->
-
---\> <!-- ```{r echo=FALSE} -->
-<!-- #heatmap using raw abundance data -->
-<!-- ggplot(melt_comdataRT_oraw, aes(Var2, Var1)) + -->
-<!-- geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + theme(axis.text.y = element_text(color=kmgrpsRT.o$col)) + -->
-<!-- scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey") -->
-<!-- ``` -->
-
-<!-- ```{r echo=FALSE} -->
-
-<!-- #heatmap using raw abundance data -->
-
-<!-- ggplot(melt_comdataRT_osqrt, aes(Var2, Var1)) + -->
-
-<!-- geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + theme(axis.text.y = element_text(color=kmgrpsRT.o$col)) + -->
-
-<!-- scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey") -->
-
-<!-- ``` -->
+###histograms of abundance of species identified in the Simper analysis
 
 ```{r}
 #setup datafile for histograms including colours
@@ -569,11 +512,7 @@ hist.col <- as.data.frame(comdataRT.h[, "kmgrpcol"]) #craete new dataframe for c
 hist.col$kmcol <- hist.col[, 1]
 ```
 
-The following bar charts show raw abundances of the above mentioned
-species for each survey, with those surveys in group `r G` (which
-contains all of the 1996 to 2022 surveys) highlighted in red. Also
-included are abundance plots for xxx other species specifically
-mentioned in the Toolibin Lake Recovery Plan.
+The following bar charts show raw abundances of the above mentioned species for each survey, with those surveys in group `r G` (which contains all of the 1996 to 2022 surveys) highlighted in red. Also included are abundance plots for xxx other species specifically mentioned in the Toolibin Lake Recovery Plan.
 
 ```{r fig.height = 4, fig.align='center'}
 ggplot(data=comdataRT.h, aes(x=reorder(date, order), Freckled.Duck, fill = kmgrpcol)) + 
