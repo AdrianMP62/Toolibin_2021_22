@@ -134,9 +134,9 @@ plot(Tool.SA3)
 
 ##Multivariate analyses
 
-###Analyses including all surveys (from both lakes) with richness >1 to remove an outlier identified in the 2019 analyses)
+###Analyses including all surveys (from both lakes) 
 
-All multivariate analyses are performed on Helinger transformed abundance data (within species abundances scaled to values between 0 and 1 and square root transformed).
+All multivariate analyses are performed on Helinger transformed abundance data (within species abundances scaled to values between 0 and 1 and square root transformed). Surveys with richness <=1 removed to deal with an outlier identified in the 2019 analyses.
 
 ```{r}
 comdata <- subset(rawdata, RICHNESS > 1)
@@ -216,113 +216,112 @@ plot(comdataA.upgma <- hclust(vegdist(comdataA.hel), method="aver"), hang=1)
 tabasco(comdataA.hel,comdataA.upgma)
 ```
 
-Very few of the surveys undertaken in the 1980s were believed by the observers to be complete counts or even that all species had been seen. The 1996 to 2022 surveys were all undertaken by boat and, while these still did not cover 100% of the lake, the surveys were relatively comprehensive. To try to account for this difference in effort and
-conditions, the next analyses use only surveys where at least 10 species were seen (indicating a reasonable survey effort) and depth was moderate to high (\>0.3m).
+<!-- Very few of the surveys undertaken in the 1980s were believed by the observers to be complete counts or even that all species had been seen. The 1996 to 2022 surveys were all undertaken by boat and, while these still did not cover 100% of the lake, the surveys were relatively comprehensive. To try to account for this difference in effort and -->
+<!-- conditions, the next analyses use only surveys where at least 10 species were seen (indicating a reasonable survey effort) and depth was moderate to high (\>0.3m). -->
 
+<!-- ###Analyses with surveys that recorded 10 or more species and depth >=0.6m -->
 
-###Analyses with surveys that recorded 10 or more species and depth >=0.6m
+<!-- ```{r} -->
+<!-- comdataR <- rawdata[rawdata$RICHNESS > 9 & rawdata$DEPTH > 0.3, ] -->
+<!-- comdataR.fact <- comdataR[, 1:5] #extract factors -->
+<!-- comdataR.fact$Period.col <- comdataR.fact$Period -->
+<!-- comdataR.fact$Period.col <- gsub('1980s', 'grey', comdataR.fact$Period.col) -->
+<!-- comdataR.fact$Period.col <- gsub("1996|2017|2021-22", 'red', comdataR.fact$Period.col) -->
+<!-- comdataR.fact$Survey <- row.names(comdataR.fact) #create column for survey name -->
+<!-- comdataR.fact$lake <- substr(rownames(comdataR.fact), 1, 1) #create factor for lake by using first letter of survey name -->
+<!-- comdataR.fact$YM <- format(as.Date(comdataR.fact$VISIT_DATE), "%m-%y") #create factor for year-month to use as labels -->
+<!-- comdataR <- comdataR[, -(1:5)] #remove factors from data file -->
+<!-- comdataR[is.na(comdataR)]<-0 # replace na with 0 -->
+<!-- comdataR <- comdataR[, colSums(comdataR) != 0] #remove species not present in any surveys -->
+<!-- comdataR.pa<-decostand(comdataR,"pa") #create presence/absence matrix -->
+<!-- comdataR.hel<-decostand(comdataR,"hellinger") # create helinger transformed matrix -->
+<!-- ``` -->
 
-```{r}
-comdataR <- rawdata[rawdata$RICHNESS > 9 & rawdata$DEPTH > 0.3, ]
-comdataR.fact <- comdataR[, 1:5] #extract factors
-comdataR.fact$Period.col <- comdataR.fact$Period
-comdataR.fact$Period.col <- gsub('1980s', 'grey', comdataR.fact$Period.col)
-comdataR.fact$Period.col <- gsub("1996|2017|2021-22", 'red', comdataR.fact$Period.col)
-comdataR.fact$Survey <- row.names(comdataR.fact) #create column for survey name
-comdataR.fact$lake <- substr(rownames(comdataR.fact), 1, 1) #create factor for lake by using first letter of survey name
-comdataR.fact$YM <- format(as.Date(comdataR.fact$VISIT_DATE), "%m-%y") #create factor for year-month to use as labels
-comdataR <- comdataR[, -(1:5)] #remove factors from data file
-comdataR[is.na(comdataR)]<-0 # replace na with 0
-comdataR <- comdataR[, colSums(comdataR) != 0] #remove species not present in any surveys
-comdataR.pa<-decostand(comdataR,"pa") #create presence/absence matrix
-comdataR.hel<-decostand(comdataR,"hellinger") # create helinger transformed matrix
-```
+<!-- ```{r include=FALSE} -->
+<!-- mds4<-metaMDS(comdataR.hel, distance="bray", k=3) #nMDS in 3 dimensions -->
+<!-- ``` -->
 
-```{r include=FALSE}
-mds4<-metaMDS(comdataR.hel, distance="bray", k=3) #nMDS in 3 dimensions
-```
+<!-- ```{r} -->
+<!-- mds4.pts <- as.data.frame(mds4$points) #extract 2D ordination coordinates (points) -->
+<!-- mds4.pts$Survey <- row.names(mds4.pts) #use survey period as row.names -->
+<!-- mds4.pts$Period <- comdataR.fact[match(mds4.pts$Survey, comdataR.fact$Survey), 2] -->
+<!-- mds4.pts$Depth <- comdataR.fact[match(mds4.pts$Survey, comdataR.fact$Survey), 4] -->
+<!-- ``` -->
 
-```{r}
-mds4.pts <- as.data.frame(mds4$points) #extract 2D ordination coordinates (points)
-mds4.pts$Survey <- row.names(mds4.pts) #use survey period as row.names
-mds4.pts$Period <- comdataR.fact[match(mds4.pts$Survey, comdataR.fact$Survey), 2]
-mds4.pts$Depth <- comdataR.fact[match(mds4.pts$Survey, comdataR.fact$Survey), 4]
-```
+<!-- Plot of axes 1 v 2 of 3D ordination (stress = -->
+<!-- `r round(mds4$stress, digits=2)`) with symbols scaled by depth. -->
 
-Plot of axes 1 v 2 of 3D ordination (stress =
-`r round(mds4$stress, digits=2)`) with symbols scaled by depth.
+<!-- ```{r fig.align = 'center'} -->
+<!-- Xmin <- min(mds4.pts$MDS1)*1.2 -->
+<!-- Xmax <- max(mds4.pts$MDS1)*1.2 -->
+<!-- Ymin <- min(mds4.pts$MDS2)*1.2 -->
+<!-- Ymax <- max(mds4.pts$MDS2)*1.2 -->
+<!-- ggplot(mds4.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period, size=Depth^2)) + coord_fixed(ratio = 1) -->
+<!-- ``` -->
 
-```{r fig.align = 'center'}
-Xmin <- min(mds4.pts$MDS1)*1.2
-Xmax <- max(mds4.pts$MDS1)*1.2
-Ymin <- min(mds4.pts$MDS2)*1.2
-Ymax <- max(mds4.pts$MDS2)*1.2
-ggplot(mds4.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period, size=Depth^2)) + coord_fixed(ratio = 1)
-```
+<!-- There is not a clear pattern here of composition being related to depth. The plot still shows all of the 1996-2022 surveys in one part of the ordination and on the edge of the 1980s surveys, but not clearly -->
+<!-- separated from them. -->
 
-There is not a clear pattern here of composition being related to depth. The plot still shows all of the 1996-2022 surveys in one part of the ordination and on the edge of the 1980s surveys, but not clearly
-separated from them.
+<!-- ###Kmeans non-hierarchical clustering -->
 
-###Kmeans non-hierarchical clustering
+<!-- To better understand how the 1980s and 1996-2022 surveys compare, a K-means cluster was undertaken. This method groups surveys into clusters without imposing a hierarchical structure. First use methods to determine the optimal number of clusters. -->
 
-To better understand how the 1980s and 1996-2022 surveys compare, a K-means cluster was undertaken. This method groups surveys into clusters without imposing a hierarchical structure. First use methods to determine the optimal number of clusters.
+<!-- Method 1: Elbow plot. Optimal number of groups should be where the slope changes -->
 
-Method 1: Elbow plot. Optimal number of groups should be where the slope changes
+<!-- ```{r fig.width=4, fig.height=4, fig.align = 'center'} -->
+<!-- fviz_nbclust(comdataR.hel, kmeans, method = "wss") -->
+<!-- ``` -->
 
-```{r fig.width=4, fig.height=4, fig.align = 'center'}
-fviz_nbclust(comdataR.hel, kmeans, method = "wss")
-```
+<!-- This doesnt give much of an indication of the optimal number of plots but there is a larger change of slope at 6. -->
 
-This doesnt give much of an indication of the optimal number of plots but there is a larger change of slope at 6.
+<!-- Method 2: gap statistic plot. Optimal number of groups is indicated by the first peak in the gap statistic value -->
 
-Method 2: gap statistic plot. Optimal number of groups is indicated by the first peak in the gap statistic value
+<!-- ```{r echo=FALSE, fig.width=4, fig.height=4, fig.align='center'} -->
+<!-- gap_stat <- clusGap(comdataR.hel, -->
+<!--                     FUN = kmeans, -->
+<!--                     nstart = 25, -->
+<!--                     K.max = 10, -->
+<!--                     B = 50) -->
+<!-- fviz_gap_stat(gap_stat) -->
+<!-- ``` -->
 
-```{r echo=FALSE, fig.width=4, fig.height=4, fig.align='center'}
-gap_stat <- clusGap(comdataR.hel,
-                    FUN = kmeans,
-                    nstart = 25,
-                    K.max = 10,
-                    B = 50)
-fviz_gap_stat(gap_stat)
-```
+<!-- This also doesnt provide much help in determining number of groups as a peak isnt reached within the first 10 groups. -->
 
-This also doesnt provide much help in determining number of groups as a peak isnt reached within the first 10 groups.
+<!-- A classic 'rule of thumb' upper bound to number of cluster groups (k) is square root of the number of samples (=surveys). sqrt(45) = 6.7 -->
 
-A classic 'rule of thumb' upper bound to number of cluster groups (k) is square root of the number of samples (=surveys). sqrt(45) = 6.7
+<!-- Irrespective of the number of groups, the 1996 to 2022 surveys did not all group together. The closest was a 6 group classification where almost all of the 1996 to 2022 surveys end up in one cluster group (the exception being the April 2017 survey at Walbyring), grouping with a similar number of 1980s surveys. -->
 
-Irrespective of the number of groups, the 1996 to 2022 surveys did not all group together. The closest was a 6 group classification where almost all of the 1996 to 2022 surveys end up in one cluster group (the exception being the April 2017 survey at Walbyring), grouping with a similar number of 1980s surveys.
+<!-- The previous ordination overlain with the 6 kmeans groups shows the 1996 to 2022 grouping with some 1980s surveys. -->
 
-The previous ordination overlain with the 6 kmeans groups shows the 1996 to 2022 grouping with some 1980s surveys.
+<!-- ```{r fig.width=4, fig.height=4, fig.align='center'} -->
+<!-- #run kmeans with k=6 -->
+<!-- comdataR.km <- kmeans(comdataR.hel, 6, nstart = 25) -->
+<!-- kmgrps <- as.data.frame(comdataR.km$cluster) #extract cluster groups and convert to dataframe format -->
+<!-- names(kmgrps) <- "kmgrps" #change name of imported group column -->
+<!-- comdataR.fact$kmgrps <- as.character(kmgrps$kmgrps) #add groups to a factor table for plotting and convert to character format -->
+<!-- ``` -->
 
-```{r fig.width=4, fig.height=4, fig.align='center'}
-#run kmeans with k=6
-comdataR.km <- kmeans(comdataR.hel, 6, nstart = 25)
-kmgrps <- as.data.frame(comdataR.km$cluster) #extract cluster groups and convert to dataframe format
-names(kmgrps) <- "kmgrps" #change name of imported group column
-comdataR.fact$kmgrps <- as.character(kmgrps$kmgrps) #add groups to a factor table for plotting and convert to character format
-```
+<!-- ```{r fig.align = 'center'} -->
+<!-- Xmin <- min(mds4.pts$MDS1)*1.2 -->
+<!-- Xmax <- max(mds4.pts$MDS1)*1.2 -->
+<!-- Ymin <- min(mds4.pts$MDS2)*1.2 -->
+<!-- Ymax <- max(mds4.pts$MDS2)*1.2 -->
+<!-- ggplot(mds4.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=comdataR.fact$kmgrps), size=6, alpha = 0.5) + coord_fixed(ratio = 1) + geom_text(aes(label=comdataR.fact$YM), size=2, vjust=1, hjust=1.3) -->
+<!-- ``` -->
 
-```{r fig.align = 'center'}
-Xmin <- min(mds4.pts$MDS1)*1.2
-Xmax <- max(mds4.pts$MDS1)*1.2
-Ymin <- min(mds4.pts$MDS2)*1.2
-Ymax <- max(mds4.pts$MDS2)*1.2
-ggplot(mds4.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=comdataR.fact$kmgrps), size=6, alpha = 0.5) + coord_fixed(ratio = 1) + geom_text(aes(label=comdataR.fact$YM), size=2, vjust=1, hjust=1.3)
-```
+<!-- A hierarchical cluster analysis was also run. In this plot the 1996 to 2022 surveys are labelled in red. All of these except for the April 2017 surveys for Walbyring and Toolibin clustered in one group, along with some of the 1980s surveys carried out in July to November. The two April 2017 surveys clustered with two May-Jul surveys from the 1980s.  -->
 
-A hierarchical cluster analysis was also run. In this plot the 1996 to 2022 surveys are labelled in red. All of these except for the April 2017 surveys for Walbyring and Toolibin clustered in one group, along with some of the 1980s surveys carried out in July to November. The two April 2017 surveys clustered with two May-Jul surveys from the 1980s. 
-
-```{r}
-comdataR.dist<-vegdist(comdataR.hel)
-comdataR.upgma <- hclust(comdataR.dist, method="aver")
-comdataR.fact$APeriod <- str_c(comdataR.fact$ALL_SPECIES, comdataR.fact$Period)
-comdataR.fact$APeriod.col <- comdataR.fact$APeriod
-comdataR.fact$APeriod.col <- gsub("A1996|A2017|A2021-22", 'red', comdataR.fact$APeriod.col)
-comdataR.fact$APeriod.col <- gsub("A1980s|A1975", 'green', comdataR.fact$APeriod.col)
-comdataR.fact$APeriod.col <- gsub("N1980s", 'grey', comdataR.fact$APeriod.col)
-#plot(comdataR.upgma, hang=-1)
-plotColoredClusters(comdataR.upgma, comdataR.fact$VISIT_DATE, comdataR.fact$APeriod.col, cex = 0.8, main = "", line = 0)
-```
+<!-- ```{r} -->
+<!-- comdataR.dist<-vegdist(comdataR.hel) -->
+<!-- comdataR.upgma <- hclust(comdataR.dist, method="aver") -->
+<!-- comdataR.fact$APeriod <- str_c(comdataR.fact$ALL_SPECIES, comdataR.fact$Period) -->
+<!-- comdataR.fact$APeriod.col <- comdataR.fact$APeriod -->
+<!-- comdataR.fact$APeriod.col <- gsub("A1996|A2017|A2021-22", 'red', comdataR.fact$APeriod.col) -->
+<!-- comdataR.fact$APeriod.col <- gsub("A1980s|A1975", 'green', comdataR.fact$APeriod.col) -->
+<!-- comdataR.fact$APeriod.col <- gsub("N1980s", 'grey', comdataR.fact$APeriod.col) -->
+<!-- #plot(comdataR.upgma, hang=-1) -->
+<!-- plotColoredClusters(comdataR.upgma, comdataR.fact$VISIT_DATE, comdataR.fact$APeriod.col, cex = 0.8, main = "", line = 0) -->
+<!-- ``` -->
 
 
 <!-- This plot shows the same cluster diagram with the kmeans group containing most of the 1996 to 2022 surveys highlighted. -->
@@ -336,19 +335,19 @@ plotColoredClusters(comdataR.upgma, comdataR.fact$VISIT_DATE, comdataR.fact$APer
 <!-- plotColoredClusters(comdataR.upgma, comdataR.fact$VISIT_DATE, comdataR.fact$kmgrpscol, cex = 0.8, main = "", line = 0) -->
 <!-- ``` -->
 
-## Analyses with only Lake Toolibin data with depth>0.3m and richness 10+
-
-###Toolibin using only surveys with 10+ species and depth >0.3m
+## Analyses with only Lake Toolibin data
 
 When just the Toolibin Surveys are considered, an ordination plot still shows the 1996 to 2022 surveys on the edge of the 1980s point cloud.
 
 ```{r}
-comdataRT <- rawdata[rawdata$RICHNESS > 0, ]
+comdataRT <- rawdata[rawdata$RICHNESS > 1, ]
 comdataRT[is.na(comdataRT)] <- 0 # replace na with 0
 comdataRT <- comdataRT[grep("^T", row.names(comdataRT)),] #extracts Toolibin
 comdataRT.fact <- comdataRT[, 1:5]
 comdataRT.fact$Survey <- row.names(comdataRT.fact)
 comdataRT.fact$YM <- format(as.Date(comdataRT.fact$VISIT_DATE), "%m-%y")
+comdataRT.fact$Depthcat <- if_else(comdataRT.fact$DEPTH >0.599, "D", "S") #D = deep, S = shallow
+comdataRT.fact$AvN <- paste(comdataRT.fact$ALL_SPECIES, comdataRT.fact$Depthcat) #new variable (colour) for depth and completeness of surveys
 comdataRT <- comdataRT[, -(1:5)] #remove factors from data file
 comdataRT <- comdataRT[, colSums(comdataRT) != 0]
 comdataRT.pa <-decostand(comdataRT,"pa") #create presence/absence matrix
@@ -357,7 +356,7 @@ comdataRT.sqrt <- sqrt(comdataRT)
 ```
 
 ```{r include=FALSE}
-mds5<-metaMDS(comdataRT.hel, distance="bray", k=2) #nMDS in 3 dimensions
+mds5<-metaMDS(comdataRT.hel, distance="bray", k=3) #nMDS in 3 dimensions
 ```
 
 ```{r}
@@ -367,6 +366,7 @@ mds5<-metaMDS(comdataRT.hel, distance="bray", k=2) #nMDS in 3 dimensions
   mds5.pts$YM <- comdataRT.fact$YM #add YearMonth for labelling
   mds5.pts$Period <- comdataRT.fact$Period
   mds5.pts$Depth <- comdataRT.fact$DEPTH
+  mds5.pts$AvN <- comdataRT.fact$AvN
   #mds5.pts$Period <- comdataRT.fact[match(row.names(mds5.pts), row.names(comdataRT.fact)), 2]
   #mds5.pts$Depth <- comdataRT.fact[match(row.names(mds5.pts), row.names(comdataRT.fact)), 4]
 ```
@@ -380,9 +380,8 @@ Xmin <- min(mds5.pts$MDS1)*1.2
 Xmax <- max(mds5.pts$MDS1)*1.2
 Ymin <- min(mds5.pts$MDS2)*1.2
 Ymax <- max(mds5.pts$MDS2)*1.2
-ggplot(mds5.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period), size=6, alpha=0.5) + coord_fixed(ratio = 1) + geom_text(aes(label=YM), size=3, vjust=1, hjust=1.3)
+ggplot(mds5.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period), size=6, alpha=0.8) + geom_point(aes(pch = AvN), data = mds5.pts[mds5.pts$AvN == "A D", ]) + coord_fixed(ratio = 1)
 ```
-
 
 ###Repeated with only sites well surveyd with depth >=0.6m
 
@@ -393,11 +392,30 @@ comdataRTA <- comdataRTA[grep("^T", row.names(comdataRTA)),] #extracts Toolibin
 comdataRTA.fact <- comdataRTA[, 1:5]
 comdataRTA.fact$Survey <- row.names(comdataRTA.fact)
 comdataRTA.fact$YM <- format(as.Date(comdataRTA.fact$VISIT_DATE), "%m-%y")
+comdataRTA.fact$Period2 <- comdataRTA.fact$Period
+comdataRTA.fact$Period2 <- gsub('1996', '1996-2022', comdataRTA.fact$Period2)
+comdataRTA.fact$Period2 <- gsub('2017', '1996-2022', comdataRTA.fact$Period2)
+comdataRTA.fact$Period2 <- gsub('2021-22', '1996-2022', comdataRTA.fact$Period2)
+comdataRTA.fact$Period2 <- gsub('1980s', 'pre-1996', comdataRTA.fact$Period2)
+comdataRTA.fact$Period2 <- gsub('1975', 'pre-1996', comdataRTA.fact$Period2)
 comdataRTA <- comdataRTA[, -(1:5)] #remove factors from data file
 comdataRTA <- comdataRTA[, colSums(comdataRTA) != 0]
 comdataRTA.pa<-decostand(comdataRTA,"pa") #create presence/absence matrix
 comdataRTA.hel<-decostand(comdataRTA,"hellinger") # create helinger transformed matrix
 comdataRTA.sqrt <- sqrt(comdataRTA)
+```
+
+```{r}
+row.names(comdataRTA.hel) <- comdataRTA.fact$VISIT_DATE
+melt_comdataRTA.hel <- melt(as.matrix(comdataRTA.hel))
+ggplot(melt_comdataRTA.hel, aes(Var2, Var1)) + geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+  scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey")
+```
+
+```{r}
+comdataRTA.Simper <- simper(comdataRTA.hel, comdataRTA.fact$Period2)
+comdataRTA.Simper
+summary(comdataRTA.Simper)
 ```
 
 ```{r include=FALSE}
@@ -427,23 +445,23 @@ Ymax <- max(mds6.pts$MDS2)*1.2
 ggplot(mds6.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period), size=6, alpha=0.5) + coord_fixed(ratio = 1) + geom_text(aes(label=YM), size=3, vjust=1, hjust=1.3)
 ```
 
-A kmeans cluster analysis with six groups places all 5 of the 1996 to
-2022 surveys of Lake Toolibin in one group, again with several 1980s
-surveys, as per this overlay on the ordination.
+<!-- A kmeans cluster analysis with six groups places all 5 of the 1996 to -->
+<!-- 2022 surveys of Lake Toolibin in one group, again with several 1980s -->
+<!-- surveys, as per this overlay on the ordination. -->
 
-```{r include = FALSE}
-#Run kmeans cluster analysis for just Toolibin and overlay on ordination
-comdataRT.km <- kmeans(comdataRT.hel, 6, nstart = 25)
-```
+<!-- ```{r include = FALSE} -->
+<!-- #Run kmeans cluster analysis for just Toolibin and overlay on ordination -->
+<!-- comdataRT.km <- kmeans(comdataRT.hel, 6, nstart = 25) -->
+<!-- ``` -->
 
-```{r, fig.align = 'center'}
-#create dataframe for plotting with ggplot with factors as labels
-kmgrpsRT <- comdataRT.km$cluster
-kmgrpsRT <- as.data.frame(kmgrpsRT)
-comdataRT.fact$kmgrpsRT <- kmgrpsRT$kmgrpsRT
-comdataRT.fact$kmgrpsRT <- as.character(comdataRT.fact$kmgrpsRT)
-ggplot(mds5.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=comdataRT.fact$kmgrpsRT), size=7, alpha=0.5) + coord_fixed(ratio = 1) + geom_text(aes(label=YM), size=3, vjust=1, hjust=1.3)
-```
+<!-- ```{r, fig.align = 'center'} -->
+<!-- #create dataframe for plotting with ggplot with factors as labels -->
+<!-- kmgrpsRT <- comdataRT.km$cluster -->
+<!-- kmgrpsRT <- as.data.frame(kmgrpsRT) -->
+<!-- comdataRT.fact$kmgrpsRT <- kmgrpsRT$kmgrpsRT -->
+<!-- comdataRT.fact$kmgrpsRT <- as.character(comdataRT.fact$kmgrpsRT) -->
+<!-- ggplot(mds5.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=comdataRT.fact$kmgrpsRT), size=7, alpha=0.5) + coord_fixed(ratio = 1) + geom_text(aes(label=YM), size=3, vjust=1, hjust=1.3) -->
+<!-- ``` -->
 
 ## What is different between 1980s and 1996-2022 for Lake Toolibin?
 
@@ -454,48 +472,51 @@ comdataRT.fact$Period2 <- comdataRT.fact$Period
 comdataRT.fact$Period2 <- gsub('1996', '1996-2022', comdataRT.fact$Period2)
 comdataRT.fact$Period2 <- gsub('2017', '1996-2022', comdataRT.fact$Period2)
 comdataRT.fact$Period2 <- gsub('2021-22', '1996-2022', comdataRT.fact$Period2)
+comdataRT.fact$Period2 <- gsub('1975', 'pre-1996', comdataRT.fact$Period2)
+comdataRT.fact$Period2 <- gsub('1980s', 'pre-1996', comdataRT.fact$Period2)
 comdataRT.Simper <- simper(comdataRT, comdataRT.fact$Period2)
-comdataRT.Simper
+summary(comdataRT.Simper)
+str(comdataRT.Simper)
 ```
 
-###Produce heatmap with siurveys clustered by Kmeans
+<!-- ###Produce heatmap with surveys clustered by Kmeans -->
 
-```{r include=FALSE}
-#identify the kmeans group to which the Jan 2022 survey belongs
-G <- comdataRT.fact[row.names(comdataRT.fact) == "TM0122", 8]
-G
-#create list with all group numbers
-K<- c(1,2,3,4,5,6)
-#subtract group number identified by G
-K <- K[K != G]
-#create duplicate factor for kmeans groups
-comdataRT.fact$kmgrpsRT2 <- comdataRT.fact$kmgrpsRT
-#replace kmeans group values to distinguish the group with the 1996-2022 surveys from the other kmeans groups.
-comdataRT.fact$kmgrpsRT2 <- gsub(G, 'Group one',comdataRT.fact$kmgrpsRT2)
-comdataRT.fact$kmgrpsRT2 <- gsub(K[1], 'Group two', comdataRT.fact$kmgrpsRT2)
-comdataRT.fact$kmgrpsRT2 <- gsub(K[2], 'Group two', comdataRT.fact$kmgrpsRT2)
-comdataRT.fact$kmgrpsRT2 <- gsub(K[3], 'Group two', comdataRT.fact$kmgrpsRT2)
-comdataRT.fact$kmgrpsRT2 <- gsub(K[4], 'Group two', comdataRT.fact$kmgrpsRT2)
-comdataRT.fact$kmgrpsRT2 <- gsub(K[5], 'Group two', comdataRT.fact$kmgrpsRT2)
-comdataRT.fact$kmgrpsRT2 <- gsub('Group two', '2', comdataRT.fact$kmgrpsRT2)
-comdataRT.fact$kmgrpsRT2 <- gsub('Group one', '1', comdataRT.fact$kmgrpsRT2)
-KMgrpsRT.2grp <- data.frame(matrix(ncol = 1, nrow = 40))
-colnames(KMgrpsRT.2grp) <- 'twogrps'
-KMgrpsRT.2grp$twogrps <- comdataRT.fact$kmgrpsRT2
-row.names(KMgrpsRT.2grp) <- row.names(comdataRT.fact)
-KMgrpsRT.2grp$twogrps <- gsub('G1', 'red', KMgrpsRT.2grp$twogrps)
-KMgrpsRT.2grp$twogrps <- gsub('G2', 'grey', KMgrpsRT.2grp$twogrps)
-```
+<!-- ```{r include=FALSE} -->
+<!-- #identify the kmeans group to which the Jan 2022 survey belongs -->
+<!-- G <- comdataRT.fact[row.names(comdataRT.fact) == "TM0122", 8] -->
+<!-- G -->
+<!-- #create list with all group numbers -->
+<!-- K<- c(1,2,3,4,5,6) -->
+<!-- #subtract group number identified by G -->
+<!-- K <- K[K != G] -->
+<!-- #create duplicate factor for kmeans groups -->
+<!-- comdataRT.fact$kmgrpsRT2 <- comdataRT.fact$kmgrpsRT -->
+<!-- #replace kmeans group values to distinguish the group with the 1996-2022 surveys from the other kmeans groups. -->
+<!-- comdataRT.fact$kmgrpsRT2 <- gsub(G, 'Group one',comdataRT.fact$kmgrpsRT2) -->
+<!-- comdataRT.fact$kmgrpsRT2 <- gsub(K[1], 'Group two', comdataRT.fact$kmgrpsRT2) -->
+<!-- comdataRT.fact$kmgrpsRT2 <- gsub(K[2], 'Group two', comdataRT.fact$kmgrpsRT2) -->
+<!-- comdataRT.fact$kmgrpsRT2 <- gsub(K[3], 'Group two', comdataRT.fact$kmgrpsRT2) -->
+<!-- comdataRT.fact$kmgrpsRT2 <- gsub(K[4], 'Group two', comdataRT.fact$kmgrpsRT2) -->
+<!-- comdataRT.fact$kmgrpsRT2 <- gsub(K[5], 'Group two', comdataRT.fact$kmgrpsRT2) -->
+<!-- comdataRT.fact$kmgrpsRT2 <- gsub('Group two', '2', comdataRT.fact$kmgrpsRT2) -->
+<!-- comdataRT.fact$kmgrpsRT2 <- gsub('Group one', '1', comdataRT.fact$kmgrpsRT2) -->
+<!-- KMgrpsRT.2grp <- data.frame(matrix(ncol = 1, nrow = 40)) -->
+<!-- colnames(KMgrpsRT.2grp) <- 'twogrps' -->
+<!-- KMgrpsRT.2grp$twogrps <- comdataRT.fact$kmgrpsRT2 -->
+<!-- row.names(KMgrpsRT.2grp) <- row.names(comdataRT.fact) -->
+<!-- KMgrpsRT.2grp$twogrps <- gsub('G1', 'red', KMgrpsRT.2grp$twogrps) -->
+<!-- KMgrpsRT.2grp$twogrps <- gsub('G2', 'grey', KMgrpsRT.2grp$twogrps) -->
+<!-- ``` -->
 
-```{r include=FALSE}
-#run simper
-comdataRT.Simper2 <- simper(comdataRT.hel, comdataRT.fact$kmgrpsRT2)
-comdataRT.Simper2
-```
+<!-- ```{r include=FALSE} -->
+<!-- #run simper -->
+<!-- comdataRT.Simper2 <- simper(comdataRT.hel, comdataRT.fact$kmgrpsRT2) -->
+<!-- comdataRT.Simper2 -->
+<!-- ``` -->
 
-This Simper analyses suggests that the abundances of the following 13 species best distinguish kmeans group `r G` from the remaining sites
-(accounting for 3/4 of the difference between group `r G` and remaining
-sites).
+<!-- This Simper analyses suggests that the abundances of the following 13 species best distinguish kmeans group `r G` from the remaining sites -->
+<!-- (accounting for 3/4 of the difference between group `r G` and remaining -->
+<!-- sites). -->
 
 ###heatmap with only 2 groups (group with 1996-2022 surveys, and the rest)
 
@@ -507,36 +528,36 @@ ggplot(melt_comdataRT_o, aes(Var2, Var1)) +
 geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + theme(axis.text.y = element_text(color=kmgrpsRT.2grp.o$twogrps)) + scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey")
 ```
 
-###heatmap with only all six kmeans groups
-
-```{r warning=FALSE}
-kmgrpsRT.o <- kmgrpsRT[order(kmgrpsRT$kmgrpsRT), , drop = FALSE] #order kmgrps according to group
-kmgrpsRT.o$col <- kmgrpsRT.o$kmgrpsRT
-kmgrpsRT.o$col <- gsub(1, "green", kmgrpsRT.o$col)
-kmgrpsRT.o$col <- gsub(2, "black", kmgrpsRT.o$col)
-kmgrpsRT.o$col <- gsub(3, "blue", kmgrpsRT.o$col)
-kmgrpsRT.o$col <- gsub(4, "red", kmgrpsRT.o$col)
-kmgrpsRT.o$col <- gsub(5, "orange", kmgrpsRT.o$col)
-kmgrpsRT.o$col <- gsub(6, "purple", kmgrpsRT.o$col)
-GT <- kmgrpsRT.o[row.names(kmgrpsRT.o) == "TM0122", 2]
-#create dataframe for graphing helinger abundances on heatmap
-comdataRT_o <- comdataRT.hel[order(match(row.names(comdataRT.hel), row.names(kmgrpsRT.o))), ] #reorder surveys in datafile based on k-means groups
-melt_comdataRT_o <- melt(as.matrix(comdataRT_o))
-#create dataframe for graphing raw abundances on heatmap
-comdataRT_oraw <- comdataRT[order(match(row.names(comdataRT), row.names(kmgrpsRT.o))), ] #reorder surveys in datafile based on k-means groups
-melt_comdataRT_oraw <- melt(as.matrix(comdataRT_oraw))
-#create dataframe for heatmap based on sqrt abundance data
-comdataRT_osqrt <- comdataRT.sqrt[order(match(row.names(comdataRT.sqrt), row.names(kmgrpsRT.o))), ] #reorder surveys in datafile based on k-means groups
-melt_comdataRT_osqrt <- melt(as.matrix(comdataRT_osqrt))
-```
-
-This can be seen in the following heatmap of relative helinger transformed species abundances across the Lake Toolibin surveys, with K-means groups labelled in different colours. Group `r G` containing all of the 1996-2022 surveys is coloured `r GT`. From this it can be seen that k-means group `r G` is characterized by the <u>COMBINATION</u> of relatively high numbers of Grey Teal, Hoary-headed Grebe, Eurasian Coot and Pink-eared Duck (these were the species identified in the simper analyses), and fewer Freckled Duck, Nankeen Night Heron, Great Cormorant, Little Pied Cormorant, Yellow-billed Spoonbill and Great Egret.
-
-```{r fig.width = 8, fig.height = 9, fig.align = 'center'}
-#heatmap using helinger transformed abundance data
-ggplot(melt_comdataRT_o, aes(Var2, Var1)) +
-  geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + theme(axis.text.y = element_text(color=kmgrpsRT.o$col)) +
-  scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey")
+<!-- # ###heatmap with only all six kmeans groups -->
+<!-- #  -->
+<!-- # ```{r warning=FALSE} -->
+<!-- # kmgrpsRT.o <- kmgrpsRT[order(kmgrpsRT$kmgrpsRT), , drop = FALSE] #order kmgrps according to group -->
+<!-- # kmgrpsRT.o$col <- kmgrpsRT.o$kmgrpsRT -->
+<!-- # kmgrpsRT.o$col <- gsub(1, "green", kmgrpsRT.o$col) -->
+<!-- # kmgrpsRT.o$col <- gsub(2, "black", kmgrpsRT.o$col) -->
+<!-- # kmgrpsRT.o$col <- gsub(3, "blue", kmgrpsRT.o$col) -->
+<!-- # kmgrpsRT.o$col <- gsub(4, "red", kmgrpsRT.o$col) -->
+<!-- # kmgrpsRT.o$col <- gsub(5, "orange", kmgrpsRT.o$col) -->
+<!-- # kmgrpsRT.o$col <- gsub(6, "purple", kmgrpsRT.o$col) -->
+<!-- # GT <- kmgrpsRT.o[row.names(kmgrpsRT.o) == "TM0122", 2] -->
+<!-- # #create dataframe for graphing helinger abundances on heatmap -->
+<!-- # comdataRT_o <- comdataRT.hel[order(match(row.names(comdataRT.hel), row.names(kmgrpsRT.o))), ] #reorder surveys in datafile based on k-means groups -->
+<!-- # melt_comdataRT_o <- melt(as.matrix(comdataRT_o)) -->
+<!-- # #create dataframe for graphing raw abundances on heatmap -->
+<!-- # comdataRT_oraw <- comdataRT[order(match(row.names(comdataRT), row.names(kmgrpsRT.o))), ] #reorder surveys in datafile based on k-means groups -->
+<!-- # melt_comdataRT_oraw <- melt(as.matrix(comdataRT_oraw)) -->
+<!-- # #create dataframe for heatmap based on sqrt abundance data -->
+<!-- # comdataRT_osqrt <- comdataRT.sqrt[order(match(row.names(comdataRT.sqrt), row.names(kmgrpsRT.o))), ] #reorder surveys in datafile based on k-means groups -->
+<!-- # melt_comdataRT_osqrt <- melt(as.matrix(comdataRT_osqrt)) -->
+<!-- # ``` -->
+<!-- #  -->
+<!-- # This can be seen in the following heatmap of relative helinger transformed species abundances across the Lake Toolibin surveys, with K-means groups labelled in different colours. Group `r G` containing all of the 1996-2022 surveys is coloured `r GT`. From this it can be seen that k-means group `r G` is characterized by the <u>COMBINATION</u> of relatively high numbers of Grey Teal, Hoary-headed Grebe, Eurasian Coot and Pink-eared Duck (these were the species identified in the simper analyses), and fewer Freckled Duck, Nankeen Night Heron, Great Cormorant, Little Pied Cormorant, Yellow-billed Spoonbill and Great Egret. -->
+<!-- #  -->
+<!-- # ```{r fig.width = 8, fig.height = 9, fig.align = 'center'} -->
+<!-- # #heatmap using helinger transformed abundance data -->
+<!-- # ggplot(melt_comdataRT_o, aes(Var2, Var1)) + -->
+<!-- #   geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + theme(axis.text.y = element_text(color=kmgrpsRT.o$col)) + -->
+<!-- #   scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey") -->
 ```
 
 ###histograms of abundance of species identified in the Simper analysis
