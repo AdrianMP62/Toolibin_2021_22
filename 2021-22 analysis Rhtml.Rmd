@@ -56,7 +56,7 @@ data.
 The waterbird data input files include depth at time of survey, visit date, period (1980s, 1996, 2017 and 2021/22), an indication (A = ALL_SPECIES) of whether the observers thought they had adequately surveyed the whole of the lake and seen all species, and species richness.
 
 ```{r}
-rawdata <- read.csv("./Data/Allsurveys18 2.csv", row.names = 1) #retain 'rawdata' as an unmodified waterbird import
+rawdata <- read.csv("./Newdata/Allsurveys18 3.csv", row.names = 1) #retain 'rawdata' as an unmodified waterbird import
 rawdata$VISIT_DATE <- as.Date(rawdata$VISIT_DATE, "%d/%m/%Y") #convert waterbird survey date to R date format
 ```
 
@@ -344,12 +344,12 @@ comdataRT <- rawdata[rawdata$RICHNESS > 1, ]
 comdataRT <- comdataRT[!rownames(comdataRT) == "T1075", ]
 comdataRT[is.na(comdataRT)] <- 0 # replace na with 0
 comdataRT <- comdataRT[grep("^T", row.names(comdataRT)),] #extracts Toolibin
-comdataRT.fact <- comdataRT[, 1:5]
+comdataRT.fact <- comdataRT[, 1:7]
 comdataRT.fact$Survey <- row.names(comdataRT.fact)
 comdataRT.fact$YM <- format(as.Date(comdataRT.fact$VISIT_DATE), "%m-%y")
 comdataRT.fact$Depthcat <- if_else(comdataRT.fact$DEPTH >0.599, "D", "S") #D = deep, S = shallow
 comdataRT.fact$AvN <- paste(comdataRT.fact$ALL_SPECIES, comdataRT.fact$Depthcat) #new variable (colour) for depth and completeness of surveys
-comdataRT <- comdataRT[, -(1:5)] #remove factors from data file
+comdataRT <- comdataRT[, -(1:7)] #remove factors from data file
 comdataRT <- comdataRT[, colSums(comdataRT) != 0]
 comdataRT.pa <-decostand(comdataRT,"pa") #create presence/absence matrix
 comdataRT.hel <-decostand(comdataRT,"hellinger") # create helinger transformed matrix
@@ -366,6 +366,7 @@ mds5<-metaMDS(comdataRT.hel, distance="bray", k=3) #nMDS in 3 dimensions
   mds5.pts$Survey <- row.names(comdataRT.fact) #use survey period as row.names
   mds5.pts$YM <- comdataRT.fact$YM #add YearMonth for labelling
   mds5.pts$Period <- comdataRT.fact$Period
+  mds5.pts$All_Ref <- comdataRT.fact$All_Ref
   mds5.pts$Depth <- comdataRT.fact$DEPTH
   mds5.pts$AvN <- comdataRT.fact$AvN
   #mds5.pts$Period <- comdataRT.fact[match(row.names(mds5.pts), row.names(comdataRT.fact)), 2]
@@ -381,7 +382,7 @@ Xmin <- min(mds5.pts$MDS1)*1.2
 Xmax <- max(mds5.pts$MDS1)*1.2
 Ymin <- min(mds5.pts$MDS2)*1.2
 Ymax <- max(mds5.pts$MDS2)*1.2
-ggplot(mds5.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period), size=6, alpha=0.8) + geom_point(aes(pch = AvN), data = mds5.pts[mds5.pts$AvN == "A D", ]) + coord_fixed(ratio = 1)
+ggplot(mds5.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period), size=6, alpha=0.8) + geom_point(aes(pch = All_Ref), data = mds5.pts[mds5.pts$All_Ref == "Y", ]) + coord_fixed(ratio = 1)
 ```
 
 ###Repeated with only sites well surveyd with depth >=0.6m
@@ -398,7 +399,6 @@ comdataRTA.fact$Period2 <- gsub('1996', '1996-2022', comdataRTA.fact$Period2)
 comdataRTA.fact$Period2 <- gsub('2017', '1996-2022', comdataRTA.fact$Period2)
 comdataRTA.fact$Period2 <- gsub('2021-22', '1996-2022', comdataRTA.fact$Period2)
 comdataRTA.fact$Period2 <- gsub('1980s', 'pre-1996', comdataRTA.fact$Period2)
-comdataRTA.fact$Period2 <- gsub('1975', 'pre-1996', comdataRTA.fact$Period2)
 comdataRTA <- comdataRTA[, -(1:5)] #remove factors from data file
 comdataRTA <- comdataRTA[, colSums(comdataRTA) != 0]
 comdataRTA.pa<-decostand(comdataRTA,"pa") #create presence/absence matrix
