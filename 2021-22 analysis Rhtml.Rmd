@@ -94,7 +94,6 @@ rawdata3.W$Depthcat <- if_else(rawdata3.W$DEPTH >0.3, "D", "S")
 rawdata3.W$colour <- paste(rawdata3.W$ALL_SPECIES, rawdata3.W$Depthcat)
 rawdata3.W$colour <- if_else(rawdata3.W$colour == "A D", "AD", "OT")
 ggplot(data = rawdata3.W, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colour = colour, alpha = 0.2), size=8, width = 0.05, height = 0.05) + xlab("Period") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(legend.position="none")
-
 ```
 
 ##species accumulation plots
@@ -136,10 +135,11 @@ plot(Tool.SA3)
 
 ###Analyses including all surveys (from both lakes) 
 
-All multivariate analyses are performed on Helinger transformed abundance data (within species abundances scaled to values between 0 and 1 and square root transformed). Surveys with richness <=1 removed to deal with an outlier identified in the 2019 analyses.
+All multivariate analyses are performed on Helinger transformed abundance data (within species abundances scaled to values between 0 and 1 and square root transformed). Surveys with richness <=1 removed to deal with an outlier identified in the 2019 analyses. Also removed the 1975 survey as this was not quantitative.
 
 ```{r}
 comdata <- subset(rawdata, RICHNESS > 1)
+comdata <- comdata[!rownames(comdata) == "T1075", ]
 comdata.fact <- comdata[, 1:5] #create file with factors
 comdata.fact$Survey <- row.names(comdata.fact)
 comdata <- comdata[, -(1:5)] #remove factors from data file
@@ -341,6 +341,7 @@ When just the Toolibin Surveys are considered, an ordination plot still shows th
 
 ```{r}
 comdataRT <- rawdata[rawdata$RICHNESS > 1, ]
+comdataRT <- comdataRT[!rownames(comdataRT) == "T1075", ]
 comdataRT[is.na(comdataRT)] <- 0 # replace na with 0
 comdataRT <- comdataRT[grep("^T", row.names(comdataRT)),] #extracts Toolibin
 comdataRT.fact <- comdataRT[, 1:5]
