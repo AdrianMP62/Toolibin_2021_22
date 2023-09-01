@@ -385,6 +385,29 @@ Ymax <- max(mds5.pts$MDS2)*1.2
 ggplot(mds5.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period), size=6, alpha=0.8) + geom_point(aes(pch = All_Ref), data = mds5.pts[mds5.pts$All_Ref == "Y", ]) + coord_fixed(ratio = 1)
 ```
 
+##Heatmap of species abundances by comprehensive survey
+```{r}
+comdataHM <- rawdata[c(rawdata$All_Ref == "Y"), ] #selects reference surveys
+comdataHM<- comdataHM[!rownames(comdataHM) == "T1075", ] #removes 1975 presence absence data 
+comdataHM <- comdataHM[grep("^T", row.names(comdataHM)),] #extracts Toolibin
+comdataHM[is.na(comdataHM)] <- 0 # replace na with 0
+comdataHM <- comdataHM[, colSums(comdataHM) != 0]
+row.names(comdataHM) <- comdataHM$VISIT_DATE
+
+comdataHM <- comdataHM[, -(1:7)]
+comdataHM.hel<-decostand(comdataHM,"hellinger") # create helinger transformed matrix
+
+melt_comdataHM.hel <- melt(as.matrix(comdataHM.hel))
+ggplot(melt_comdataRTA.hel, aes(Var2, Var1)) + geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+  scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey")
+```
+
+
+
+
+
+
+
 ###Repeated with only sites well surveyd with depth >=0.6m
 
 ```{r}
@@ -530,7 +553,7 @@ geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_tex
 ```
 
 <!-- # ###heatmap with only all six kmeans groups -->
-<!-- #  -->
+<!-- # -->
 <!-- # ```{r warning=FALSE} -->
 <!-- # kmgrpsRT.o <- kmgrpsRT[order(kmgrpsRT$kmgrpsRT), , drop = FALSE] #order kmgrps according to group -->
 <!-- # kmgrpsRT.o$col <- kmgrpsRT.o$kmgrpsRT -->
@@ -551,9 +574,9 @@ geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_tex
 <!-- # comdataRT_osqrt <- comdataRT.sqrt[order(match(row.names(comdataRT.sqrt), row.names(kmgrpsRT.o))), ] #reorder surveys in datafile based on k-means groups -->
 <!-- # melt_comdataRT_osqrt <- melt(as.matrix(comdataRT_osqrt)) -->
 <!-- # ``` -->
-<!-- #  -->
+<!-- # -->
 <!-- # This can be seen in the following heatmap of relative helinger transformed species abundances across the Lake Toolibin surveys, with K-means groups labelled in different colours. Group `r G` containing all of the 1996-2022 surveys is coloured `r GT`. From this it can be seen that k-means group `r G` is characterized by the <u>COMBINATION</u> of relatively high numbers of Grey Teal, Hoary-headed Grebe, Eurasian Coot and Pink-eared Duck (these were the species identified in the simper analyses), and fewer Freckled Duck, Nankeen Night Heron, Great Cormorant, Little Pied Cormorant, Yellow-billed Spoonbill and Great Egret. -->
-<!-- #  -->
+<!-- # -->
 <!-- # ```{r fig.width = 8, fig.height = 9, fig.align = 'center'} -->
 <!-- # #heatmap using helinger transformed abundance data -->
 <!-- # ggplot(melt_comdataRT_o, aes(Var2, Var1)) + -->
