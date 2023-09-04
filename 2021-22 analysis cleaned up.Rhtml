@@ -46,26 +46,13 @@ rawdata <- read.csv("./Newdata/Allsurveys18 3.csv", row.names = 1) #retain 'rawd
 rawdata$VISIT_DATE <- as.Date(rawdata$VISIT_DATE, "%d/%m/%Y") #convert waterbird survey date to R date format
 ```
 
-##Column plots for richness - using only survey dates where observers thought all species counted and depth >=0.3m
 
-```{r}
-rawdata2 <- rawdata
-rawdata2$wetland <- row.names(rawdata2)
-rawdata2$wetland <- str_sub(rawdata2$wetland,1,1)
-#subset data to surveys where all species thought to have been seen, depth >0.299m and Lake Toolibin only
-rawdata2 <- filter(rawdata2, ALL_SPECIES == "A" & DEPTH > 0.299 & wetland == "T")
-rawdata2$order <- 1:nrow(rawdata2) #create a new variable for original sample order
-rawdata2$date2 <- format(rawdata2$VISIT_DATE, "%h-%Y") 
-dates <- as.factor(rawdata2$date2)
-ggplot(data = rawdata2) + geom_col(mapping = aes(x=reorder(date2, order), y = RICHNESS, fill = Period)) + xlab("Survey") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(axis.text.x = element_text(angle = 90))
-```
-
-##scatterplots by period with colour denoting whether all species likely observed
+##scatterplots by period with colour denoting whether surveys considered 'reference' (='comprehensive')
 
 ```{r}
 rawdata3 <- rawdata
 rawdata3$wetland <- row.names(rawdata3)
-rawdata3$wetland <- str_sub(rawdata3$wetland,1,1)
+rawdata3$wetland <- str_sub(row,names(rawdata3),1,1)
 
 #Toolibin scatterplot
 rawdata3.T <- filter(rawdata3, wetland == "T")
