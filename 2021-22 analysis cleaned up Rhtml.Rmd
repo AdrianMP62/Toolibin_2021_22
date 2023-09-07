@@ -58,12 +58,16 @@ rawdata3$wetland <- str_sub(row.names(rawdata3),1,1) #created new var for Toolib
 #Toolibin scatterplot
 rawdata3.T <- filter(rawdata3, wetland == "T")
 rawdata3.T$colour <- rawdata3.T$All_Ref #new variable (colour) to indicate whether survey is considered reference (Y and N)
-ggplot(data = rawdata3.T, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colour = colour, alpha = 0.2), size=8, width = 0.05, height = 0.05) + xlab("Period") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(legend.position="none")
+rawdata3.T$colour <- gsub('N', 'Blue', rawdata3.T$colour)
+rawdata3.T$colour <- gsub('Y', 'Red', rawdata3.T$colour)
+rawdata3.T$colour <- gsub('M', 'Black', rawdata3.T$colour)
+scat.col <- rawdata3.T$colour
+ggplot(data = rawdata3.T, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colour = colour, alpha = 0.2), size=8, width = 0.05, height = 0.05) + xlab("Period") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(legend.position="none") + scale_color_manual(values = c("Blue", "Grey", "Red"))
 
 #Walbyring scatterplot
 rawdata3.W <- filter(rawdata3, wetland == "W")
 rawdata3.W$colour <- rawdata3.W$All_Ref #new variable (colour) for depth and completeness of surveys
-ggplot(data = rawdata3.W, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colour = colour, alpha = 0.2), size=8, width = 0.05, height = 0.05) + xlab("Period") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(legend.position="none")
+ggplot(data = rawdata3.W, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colour = colour, alpha = 0.2), size=8, width = 0.05, height = 0.05) + xlab("Period") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(legend.position="none") + scale_color_manual(values = c("Blue", "Grey", "Red"))
 ```
 
 ##species accumulation plots
@@ -71,8 +75,9 @@ ggplot(data = rawdata3.W, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colou
 ```{r}
 #Toolibin species accumulation for 1975+1980s with all surveys - NEED TO REPEAT WITH JUST DEPTH >0.3M and complete surveys
 rawdata.T.SA <- rawdata3.T #use data from Toolibin scatterplots above
-rawdata.T.SA <- rawdata.T.SA[, -c(1:7,50:51)] #delete columns with factors
-rawdata.T.SA <- rawdata.T.SA[-grep("TM", rownames(rawdata.T.SA)), ] #remove 1996+ data, denoted by TM in survey names
+str(rawdata.T.SA)
+rawdata.T.SA <- rawdata.T.SA[-grep("M", rawdata.T.SA$All_Ref), ] #remove 1996+ data, denoted by TM in survey names
+rawdata.T.SA <- rawdata.T.SA[, -c(1:8,55:56)] #delete columns with factors
 rawdata.T.SA <- rawdata.T.SA %>% replace(is.na(.), 0)
 rawdata.T.SA <-as.data.frame(rawdata.T.SA)
 rawdata.T.SA[] <- lapply(rawdata.T.SA, as.numeric)
@@ -83,8 +88,8 @@ plot(Tool.SA)
 #Toolibin species accumulation for 1975+1980s considered to be refernce surveys
 rawdata.T.SA2 <- rawdata3.T
 rawdata.T.SA2 <- rawdata.T.SA2[rawdata.T.SA2$All_Ref  == "Y", ]
-rawdata.T.SA2 <- rawdata.T.SA2[, -c(1:7,50:51)]
-rawdata.T.SA2 <- rawdata.T.SA2[-grep("TM", rownames(rawdata.T.SA2)), ]
+rawdata.T.SA <- rawdata.T.SA[-grep("M", rawdata.T.SA$All_Ref), ] #remove 1996+ data, denoted by TM in survey names
+rawdata.T.SA2 <- rawdata.T.SA2[, -c(1:8,55:56)]
 rawdata.T.SA2 <- rawdata.T.SA2 %>% replace(is.na(.), 0)
 rawdata.T.SA2 <-as.data.frame(rawdata.T.SA2)
 rawdata.T.SA2[] <- lapply(rawdata.T.SA2, as.numeric)
@@ -101,9 +106,9 @@ All multivariate analyses are performed on Helinger transformed abundance data (
 ```{r}
 comdata <- subset(rawdata, RICHNESS > 1)
 comdata <- comdata[!rownames(comdata) == "T1075", ]
-comdata.fact <- comdata[, 1:5] #create file with factors
+comdata.fact <- comdata[, 1:8] #create file with factors
 comdata.fact$Survey <- row.names(comdata.fact)
-comdata <- comdata[, -(1:5)] #remove factors from data file
+comdata <- comdata[, -(1:8)] #remove factors from data file
 comdata[1:5, 1:5] #check first five lines & columns of data file
 comdata[is.na(comdata)]<-0 # replace na with 0
 comdata.pa<-decostand(comdata,"pa") #create presence/absence matrix
@@ -124,7 +129,7 @@ mds2 <- metaMDS(comdata.hel, distance = "bray", k=3) #nMDS in 3 dimensions
 #Extract mds2 coordinates and create new dataframe with coordinates, survey, and survey period
 mds2.pts <- as.data.frame(mds2$points) #extract 2D ordination coordinates (points)
 mds2.pts$Survey <- row.names(mds2.pts)
-mds2.pts$Period <- comdata.fact[match(mds2.pts$Survey, comdata.fact$Survey), 2] #column '2' has 'Period'
+mds2.pts$Period2 <- comdata.fact[match(mds2.pts$Survey, comdata.fact$Survey), 3] #column '2' has 'Period'
 ```
 
 Below is a plot of axes 1 v 2 of the 3D ordination, showing all of the 1996 to 2022 surveys on the edge of the 1975 and 1980s surveys.
@@ -135,49 +140,8 @@ Xmin <- min(mds2.pts$MDS1)*1.2
 Xmax <- max(mds2.pts$MDS1)*1.2
 Ymin <- min(mds2.pts$MDS2)*1.2
 Ymax <- max(mds2.pts$MDS2)*1.2
-ggplot(mds2.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period), size=5) + coord_fixed(ratio = 1)
+ggplot(mds2.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period2), size=5) + coord_fixed(ratio = 1)
 ```
-
-####Ordination analyses with just surveys that were considered complete and depth >=0.6m
-
-```{r eval = FALSE}
-comdataA <- rawdata[rawdata$All_Ref == "Y", ]
-comdataA <- comdataA[!rownames(comdataA) == "T1075", ]
-comdataA.fact <- comdataA[, 1:7] #seperate out factors
-comdataA.fact$Survey <- row.names(comdataA.fact)
-comdataA <- comdataA[, -(1:7)] #remove factors from data file
-comdataA[is.na(comdataA)]<-0 # replace na with 0
-comdataA.pa<-decostand(comdataA,"pa") #create presence/absence matrix
-comdataA.hel<-decostand(comdataA,"hellinger") # create helinger transformed matrix
-```
-
-```{r eval = FALSE}
-mds3<-metaMDS(comdataA.hel,distance="bray", k=3) #nMDS in 3 dimensions
-```
-
-```{r eval = FALSE}
-mds3.pts <- as.data.frame(mds3$points) #extract 2D ordination coordinates (points)
-mds3.pts$Survey <- row.names(mds3.pts) #use survey period as row.names
-#extract Period and depth as variables for use in ordination plot
-mds3.pts$Period <- comdataA.fact[match(mds3.pts$Survey, comdataA.fact$Survey), 2] 
-mds3.pts$Depth <- comdataA.fact[match(mds3.pts$Survey, comdataA.fact$Survey), 6]
-```
-
-```{r fig.align = 'center'}
-Xmin <- min(mds3.pts$MDS1)*1.2
-Xmax <- max(mds3.pts$MDS1)*1.2
-Ymin <- min(mds3.pts$MDS2)*1.2
-Ymax <- max(mds3.pts$MDS2)*1.2
-ggplot(mds3.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period, size=Depth^2)) + coord_fixed(ratio = 1)
-```
-
-####Cluster analysis of just surveys considered complete
-
-```{r eval = FALSE}
-plot(comdataA.upgma <- hclust(vegdist(comdataA.hel), method="aver"), hang=1)
-tabasco(comdataA.hel,comdataA.upgma)
-```
-
 
 ## Analyses with only Lake Toolibin data
 
@@ -188,12 +152,12 @@ comdataRT <- rawdata[rawdata$RICHNESS > 1, ]
 comdataRT <- comdataRT[!rownames(comdataRT) == "T1075", ]
 comdataRT[is.na(comdataRT)] <- 0 # replace na with 0
 comdataRT <- comdataRT[grep("^T", row.names(comdataRT)),] #extracts Toolibin
-comdataRT.fact <- comdataRT[, 1:7]
+comdataRT.fact <- comdataRT[, 1:8]
 comdataRT.fact$Survey <- row.names(comdataRT.fact)
 comdataRT.fact$YM <- format(as.Date(comdataRT.fact$VISIT_DATE), "%m-%y")
 comdataRT.fact$Depthcat <- if_else(comdataRT.fact$DEPTH >0.599, "D", "S") #D = deep, S = shallow
 comdataRT.fact$AvN <- paste(comdataRT.fact$ALL_SPECIES, comdataRT.fact$Depthcat) #new variable (colour) for depth and completeness of surveys
-comdataRT <- comdataRT[, -(1:7)] #remove factors from data file
+comdataRT <- comdataRT[, -(1:8)] #remove factors from data file
 comdataRT <- comdataRT[, colSums(comdataRT) != 0]
 comdataRT.pa <-decostand(comdataRT,"pa") #create presence/absence matrix
 comdataRT.hel <-decostand(comdataRT,"hellinger") # create helinger transformed matrix
@@ -210,7 +174,7 @@ mds5<-metaMDS(comdataRT.hel, distance="bray", k=3) #nMDS in 3 dimensions
   mds5.pts <- as.data.frame(mds5$points) #extract 2D ordination coordinates (points)
   mds5.pts$Survey <- row.names(comdataRT.fact) #use survey period as row.names
   mds5.pts$YM <- comdataRT.fact$YM #add YearMonth for labelling
-  mds5.pts$Period <- comdataRT.fact$Period
+  mds5.pts$Period2 <- comdataRT.fact$Period2
   mds5.pts$All_Ref <- comdataRT.fact$All_Ref
   mds5.pts$Depth <- comdataRT.fact$DEPTH
   mds5.pts$AvN <- comdataRT.fact$AvN
@@ -227,7 +191,7 @@ Xmin <- min(mds5.pts$MDS1)*1.2
 Xmax <- max(mds5.pts$MDS1)*1.2
 Ymin <- min(mds5.pts$MDS2)*1.2
 Ymax <- max(mds5.pts$MDS2)*1.2
-ggplot(mds5.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period), size=6, alpha=0.8) + geom_point(aes(pch = All_Ref), data = mds5.pts[mds5.pts$All_Ref == "Y", ]) + coord_fixed(ratio = 1)
+ggplot(mds5.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period2), size=6, alpha=0.8) + coord_fixed(ratio = 1) + scale_color_manual(values = c("dodgerblue4", "deepskyblue2", "cadetblue1", "Grey","Red")) + labs(colour = "Period") 
 ```
 
 ```{r eval = FALSE}
@@ -235,38 +199,29 @@ plot(comdataRT.upgma <- hclust(vegdist(comdataRT.hel), method="aver"), hang=1)
 tabasco(comdataRT.hel,comdataRT.upgma)
 ```
 
-
-
-
-
-
-
-
-
-
-##Heatmap of species abundances by comprehensive survey
+##Heatmap of species abundances by reference survey
 ```{r}
-comdataHM <- rawdata[c(rawdata$All_Ref == "Y"), ] #selects reference surveys
+comdataHM <- rawdata[rawdata$All_Ref %in% c("Y","M"), ] #selects reference surveys
 comdataHM<- comdataHM[!rownames(comdataHM) == "T1075", ] #removes 1975 presence absence data 
 comdataHM <- comdataHM[grep("^T", row.names(comdataHM)),] #extracts Toolibin
 comdataHM[is.na(comdataHM)] <- 0 # replace na with 0
 row.names(comdataHM) <- comdataHM$VISIT_DATE
-comdataHM <- comdataHM[, -(1:7)]
+comdataHM <- comdataHM[, -(1:8)]
 comdataHM <- comdataHM[, colSums(comdataHM) != 0]
 comdataHM.hel<-decostand(comdataHM,"hellinger") # create helinger transformed matrix
 melt_comdataHM.hel <- melt(as.matrix(comdataHM.hel))
 ggplot(melt_comdataHM.hel, aes(Var2, Var1)) + geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
-  scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey")
+  scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey") + theme(axis.text.y = element_text(colour = c("black", "black","black","black","black","black","black","black","black","black","black","blue", "blue", "blue", "blue", "blue", "blue", "blue")))
 ```
 
 ##Simper analysis of just the comprehensive surveys
 ```{r}
-comdataRTA <- rawdata[rawdata$All_Ref == "Y", ]
+comdataRTA <- rawdata[rawdata$All_Ref %in% c("Y","M"), ]
 comdataRTA[is.na(comdataRTA)]<-0 # replace na with 0
 comdataRTA <- comdataRTA[grep("^T", row.names(comdataRTA)),] #extracts Toolibin
 comdataRTA <- comdataRTA[!rownames(comdataRTA) == "T1075", ] #removes 1975 presence absence data 
-comdataRTA.fact <- comdataRTA[, 1:7]
-comdataRTA <- comdataRTA[, -(1:7)] #remove factors from data file
+comdataRTA.fact <- comdataRTA[, 1:8]
+comdataRTA <- comdataRTA[, -(1:8)] #remove factors from data file
 comdataRTA.fact$Survey <- row.names(comdataRTA.fact)
 comdataRTA.fact$YM <- format(as.Date(comdataRTA.fact$VISIT_DATE), "%m-%y")
 comdataRTA.fact$Period2 <- comdataRTA.fact$Period
