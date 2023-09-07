@@ -199,6 +199,13 @@ plot(comdataRT.upgma <- hclust(vegdist(comdataRT.hel), method="aver"), hang=1)
 tabasco(comdataRT.hel,comdataRT.upgma)
 ```
 
+
+
+
+
+
+
+
 ##Heatmap of species abundances by reference survey
 ```{r}
 comdataHM <- rawdata[rawdata$All_Ref %in% c("Y","M"), ] #selects reference surveys
@@ -208,13 +215,13 @@ comdataHM[is.na(comdataHM)] <- 0 # replace na with 0
 row.names(comdataHM) <- comdataHM$VISIT_DATE
 comdataHM <- comdataHM[, -(1:8)]
 comdataHM <- comdataHM[, colSums(comdataHM) != 0]
-comdataHM.hel<-decostand(comdataHM,"hellinger") # create helinger transformed matrix
+comdataHM.hel <-decostand(comdataHM,"hellinger") # create helinger transformed matrix
 melt_comdataHM.hel <- melt(as.matrix(comdataHM.hel))
 ggplot(melt_comdataHM.hel, aes(Var2, Var1)) + geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
   scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey") + theme(axis.text.y = element_text(colour = c("black", "black","black","black","black","black","black","black","black","black","black","blue", "blue", "blue", "blue", "blue", "blue", "blue")))
 ```
 
-##Simper analysis of just the comprehensive surveys
+##Simper analysis of just the reference surveys
 ```{r}
 comdataRTA <- rawdata[rawdata$All_Ref %in% c("Y","M"), ]
 comdataRTA[is.na(comdataRTA)]<-0 # replace na with 0
@@ -222,77 +229,27 @@ comdataRTA <- comdataRTA[grep("^T", row.names(comdataRTA)),] #extracts Toolibin
 comdataRTA <- comdataRTA[!rownames(comdataRTA) == "T1075", ] #removes 1975 presence absence data 
 comdataRTA.fact <- comdataRTA[, 1:8]
 comdataRTA <- comdataRTA[, -(1:8)] #remove factors from data file
-comdataRTA.fact$Survey <- row.names(comdataRTA.fact)
-comdataRTA.fact$YM <- format(as.Date(comdataRTA.fact$VISIT_DATE), "%m-%y")
-comdataRTA.fact$Period2 <- comdataRTA.fact$Period
-comdataRTA.fact$Period2 <- gsub('1996', '1996-2022', comdataRTA.fact$Period2)
-comdataRTA.fact$Period2 <- gsub('2017', '1996-2022', comdataRTA.fact$Period2)
-comdataRTA.fact$Period2 <- gsub('2021-22', '1996-2022', comdataRTA.fact$Period2)
-comdataRTA.fact$Period2 <- gsub('1980s', 'pre-1996', comdataRTA.fact$Period2)
 comdataRTA <- comdataRTA[, colSums(comdataRTA) != 0]
 comdataRTA.hel<-decostand(comdataRTA,"hellinger") # create helinger transformed matrix
-comdataRTA.Simper <- simper(comdataRTA.hel, comdataRTA.fact$Period2)
+#simper on transformed data
+comdataRTA.Simper <- simper(comdataRTA.hel, comdataRTA.fact$All_Ref)
 summary(comdataRTA.Simper)
-str(comdataRTA.Simper)
+#simper on untransformed data
+comdataRTA.Simper <- simper(comdataRTA, comdataRTA.fact$All_Ref)
+summary(comdataRTA.Simper)
 ```
 
-
-##nmds analyses of just Toolibin comprehenasive surveys
-
+###boxplots for major feeding guilds
 ```{r}
-
+guilds <- read.csv("./Newdata/ToolibinGuilds.csv")
+comdataHMG <- comdataHM
+names(comdataHMG) <- guilds$Guild[match(names(comdataHMG), guilds$Species)]
+comdataHMG[1:5, ]
 ```
 
 
 
 
-
-## What is different between 1980s and 1996-2022 for Lake Toolibin?
-
-A SimPer analysis was undertaken to identify those species contributing most to differentiating communities of the kmeans group containing all of the 1996-2022 surveys from remaining 1980s sites
-
-```{r eval=FALSE}
-comdataRT.fact$Period2 <- comdataRT.fact$Period
-comdataRT.fact$Period2 <- gsub('1996', '1996-2022', comdataRT.fact$Period2)
-comdataRT.fact$Period2 <- gsub('2017', '1996-2022', comdataRT.fact$Period2)
-comdataRT.fact$Period2 <- gsub('2021-22', '1996-2022', comdataRT.fact$Period2)
-comdataRT.fact$Period2 <- gsub('1975', 'pre-1996', comdataRT.fact$Period2)
-comdataRT.fact$Period2 <- gsub('1980s', 'pre-1996', comdataRT.fact$Period2)
-comdataRT.Simper <- simper(comdataRT, comdataRT.fact$Period2)
-summary(comdataRT.Simper)
-str(comdataRT.Simper)
-```
-
-
-
-###heatmap with only 2 groups (group with 1996-2022 surveys, and the rest)
-
-```{r echo=FALSE, warning=FALSEfig.width = 6, fig.height = 6}
-kmgrpsRT.2grp.o <- KMgrpsRT.2grp[order(KMgrpsRT.2grp$twogrps), , drop = FALSE] #order kmgrps according to group -->
-comdataRT_o <- comdataRT.hel[order(match(row.names(comdataRT.hel), row.names(kmgrpsRT.2grp.o))), ] #reorder surveys in datafile based on k-means groups
-melt_comdataRT_o <- melt(as.matrix(comdataRT_o))
-ggplot(melt_comdataRT_o, aes(Var2, Var1)) +
-geom_tile(aes(fill = value), colour = "white") + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) + theme(axis.text.y = element_text(color=kmgrpsRT.2grp.o$twogrps)) + scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey")
-```
-
-```
-
-###histograms of abundance of species identified in the Simper analysis
-
-```{r}
-#setup datafile for histograms including colours
-comdataRT.h <- comdataRT
-comdataRT.h$order <- c(1:40) #create variable for ordering dates correctly in histograms
-comdataRT.h$date <- comdataRT.fact$VISIT_DATE
-comdataRT.h$kmgrp <- comdataRT.fact$kmgrpsRT #add in km groups
-comdataRT.h$kmgrpcol <- comdataRT.h$kmgrp #copy km groups for conversion to colours
-comdataRT.h$kmgrpcol[comdataRT.h$kmgrpcol != G] <- "grey"  #G = gkm group to which the 1996-2022 surveys belong.
-comdataRT.h$kmgrpcol[comdataRT.h$kmgrpcol == G] <- "red"
-#comdataRT.h$kmgrpcol <- as.factor(comdataRT.h$kmgrpcol) #convert colour variable to a factor
-comdataRT.h$survey <- row.names(comdataRT.h)
-hist.col <- as.data.frame(comdataRT.h[, "kmgrpcol"]) #craete new dataframe for colour of x axis labels
-hist.col$kmcol <- hist.col[, 1]
-```
 
 The following bar charts show raw abundances of the above mentioned species for each survey, with those surveys in group `r G` (which contains all of the 1996 to 2022 surveys) highlighted in red. Also included are abundance plots for xxx other species specifically mentioned in the Toolibin Lake Recovery Plan.
 
