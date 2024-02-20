@@ -199,13 +199,6 @@ plot(comdataRT.upgma <- hclust(vegdist(comdataRT.hel), method="aver"), hang=1)
 tabasco(comdataRT.hel,comdataRT.upgma)
 ```
 
-
-
-
-
-
-
-
 ##Heatmap of species abundances by reference survey
 ```{r}
 comdataHM <- rawdata[rawdata$All_Ref %in% c("Y","M"), ] #selects reference surveys
@@ -239,6 +232,40 @@ comdataRTA.Simper <- simper(comdataRTA, comdataRTA.fact$All_Ref)
 summary(comdataRTA.Simper)
 ```
 
+
+##Sum Toolibin reference and modern data by guild count
+```{r}
+guilds <- read.csv("./Newdata/ToolibinGuilds.csv") #import Stuart Halse guild data
+comdataRTA.guilds <- rawdata[rawdata$All_Ref %in% c("Y","M"), ] #copy raw data and extract only reference and modern surveys
+comdataRTA.guilds[is.na(comdataRTA.guilds)]<-0 # replace na with 0
+comdataRTA.guilds <- comdataRTA.guilds[grep("^T", row.names(comdataRTA.guilds)),] #extracts Toolibin
+comdataRTA.guilds <- comdataRTA.guilds[!rownames(comdataRTA.guilds) == "T1075", ] #removes 1975 presence absence data 
+comdataRTA.guilds <- comdataRTA.guilds[, -(c(1,2,3,4,5,7,8))] #removes factors other than 'reference' and 'modern' surveys
+comdataRTA.guilds$survey <- row.names(comdataRTA.guilds)
+comdataRTA.guilds <- reshape2::melt(comdataRTA.guilds) #create long-format file from matrix
+comdataRTA.guilds <- comdataRTA.guilds %>% rename_at('variable', ~'Species')
+comdataRTA.guilds <- merge(x=comdataRTA.guilds, y=guilds, by="Species", all.x=TRUE);
+comdataRTA.guilds <- as.data.table(comdataRTA.guilds[comdataRTA.guilds$value != 0, ]) #remove zero counts
+comdataRTA.guilds <- comdataRTA.guilds[, -c(1,4)]
+#sum species richness by guild
+comdataRTA.guilds <- comdataRTA.guilds %>% group_by(survey,All_Ref,Guild) %>% summarise(no_rows = length(Guild))
+#change column headings
+colnames(comdataRTA.guilds) <- c("Survey","Period","Guild","Richness")
+#change values for Period
+comdataRTA.guilds[comdataRTA.guilds == "Y"] <- "Reference"
+comdataRTA.guilds[comdataRTA.guilds == "M"] <- "1996-2022"
+```
+
+##Scatterplots of guild richness by guild
+```{r}
+ggplot(comdataRTA.guilds, aes(Period, Richness)) +
+  geom_jitter(width = 0.0, height = 0.0, size=5, pch=16, colour="blue", alpha = 0.4) + scale_x_discrete(limits = c("Reference", "1996-2022")) +
+  facet_wrap(vars(Guild))
+```
+
+
+
+
 ###boxplots for major feeding guilds
 ```{r}
 guilds <- read.csv("./Newdata/ToolibinGuilds.csv")
@@ -247,6 +274,12 @@ names(comdataHMG) <- guilds$Guild[match(names(comdataHMG), guilds$Species)]
 comdataHMG[1:5, ]
 ```
 
+p <- ggplot(data = df.m, aes(x=variable, y=value)) + 
+             geom_boxplot(aes(fill=Label))
+p + facet_wrap( ~ variable, scales="free")
+
+
+
 
 
 
@@ -254,7 +287,7 @@ comdataHMG[1:5, ]
 The following bar charts show raw abundances of the above mentioned species for each survey, with those surveys in group `r G` (which contains all of the 1996 to 2022 surveys) highlighted in red. Also included are abundance plots for xxx other species specifically mentioned in the Toolibin Lake Recovery Plan.
 
 ```{r fig.height = 4, fig.align='center'}
-ggplot(data=comdataRT.h, aes(x=reorder(date, order), Freckled.Duck, fill = kmgrpcol)) + 
+ggplot(data=comdataRTA, aes(x=reorder(date, order), Freckled.Duck, fill = kmgrpcol)) + 
   geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Freckled Duck") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
 
 ggplot(data=comdataRT.h, aes(x=reorder(date, order), Great.Egret, fill = kmgrpcol)) + 
