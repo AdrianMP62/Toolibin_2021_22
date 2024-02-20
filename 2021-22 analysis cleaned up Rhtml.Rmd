@@ -239,7 +239,6 @@ guilds <- read.csv("./Newdata/ToolibinGuilds.csv") #import Stuart Halse guild da
 comdataRTA.guilds <- rawdata[rawdata$All_Ref %in% c("Y","M"), ] #copy raw data and extract only reference and modern surveys
 comdataRTA.guilds[is.na(comdataRTA.guilds)]<-0 # replace na with 0
 comdataRTA.guilds <- comdataRTA.guilds[grep("^T", row.names(comdataRTA.guilds)),] #extracts Toolibin
-comdataRTA.guilds <- comdataRTA.guilds[!rownames(comdataRTA.guilds) == "T1075", ] #removes 1975 presence absence data 
 comdataRTA.guilds <- comdataRTA.guilds[, -(c(1,2,3,4,5,7,8))] #removes factors other than 'reference' and 'modern' surveys
 comdataRTA.guilds$survey <- row.names(comdataRTA.guilds)
 comdataRTA.guilds <- reshape2::melt(comdataRTA.guilds) #create long-format file from matrix
@@ -254,31 +253,28 @@ colnames(comdataRTA.guilds) <- c("Survey","Period","Guild","Richness")
 #change values for Period
 comdataRTA.guilds[comdataRTA.guilds == "Y"] <- "Reference"
 comdataRTA.guilds[comdataRTA.guilds == "M"] <- "1996-2022"
+#create short-format matrix to add in zero values for missing guilds in each survey
+comdataRTA.guilds.m <- dcast(comdataRTA.guilds, formula = Survey ~ Guild, value="Richness", fill=0)
+#convert back to long-format
+comdataRTA.guilds.2 <- reshape2::melt(comdataRTA.guilds.m) #create long-format file from matrix
+#add back the Period column by matching back to the original data file
+colnames(comdataRTA.guilds.2)[2] <- 'Guild'
+colnames(comdataRTA.guilds.2)[3] <- 'Richness'
+comdataRTA.guilds.2$Period <- comdataRTA.guilds$Period[match(comdataRTA.guilds.2$Survey, c(comdataRTA.guilds$Survey))]
+comdataRTA.guilds.2$Richness.prop <- comdataRTA.guilds.2$Richness
 ```
 
-##Scatterplots of guild richness by guild
+##Scatterplots and boxplots of guild richness by guild
 ```{r}
-ggplot(comdataRTA.guilds, aes(Period, Richness)) +
-  geom_jitter(width = 0.0, height = 0.0, size=5, pch=16, colour="blue", alpha = 0.4) + scale_x_discrete(limits = c("Reference", "1996-2022")) +
+ggplot(comdataRTA.guilds.2, aes(Period, Richness)) +
+  geom_jitter(width = 0.0, height = 0.00, size=5, pch=16, colour="blue", alpha = 0.3) + scale_x_discrete(limits = c("Reference", "1996-2022")) +
+  facet_wrap(vars(Guild))
+
+ggplot(comdataRTA.guilds.2, aes(Period, Richness)) +
+  geom_boxplot(outlier.shape = NA, coef = 0) + scale_x_discrete(limits = c("Reference", "1996-2022")) +
+  geom_jitter(width = 0.0, height = 0.0, size=5, pch=16, colour="blue", alpha = 0.3) + 
   facet_wrap(vars(Guild))
 ```
-
-
-
-
-###boxplots for major feeding guilds
-```{r}
-guilds <- read.csv("./Newdata/ToolibinGuilds.csv")
-comdataHMG <- comdataHM
-names(comdataHMG) <- guilds$Guild[match(names(comdataHMG), guilds$Species)]
-comdataHMG[1:5, ]
-```
-
-p <- ggplot(data = df.m, aes(x=variable, y=value)) + 
-             geom_boxplot(aes(fill=Label))
-p + facet_wrap( ~ variable, scales="free")
-
-
 
 
 
