@@ -238,14 +238,55 @@ summary(comdataRTA.Simper)
 comdataRTA.2 <- as.data.table(comdataRTA)
 comdataRTA.2$Period <- comdataRTA.fact$Period2
 comdataRTA.2$Period <- ifelse(comdataRTA.2$Period %in% c("1996","2017","2021/22"), comdataRTA.2$Period, "Reference")
-
+str(comdataRTA.2)
 
 ###Freckled Duck
 comdataRTA.2[, Sympch := ifelse(Freckled.Duck == "0", 1, 16)]
 comdataRTA.2$Sympch <- as.factor(comdataRTA.2$Sympch)
+comdataRTA.2$Sympch <- as.factor(comdataRTA.2$Sympch)
 ggplot(comdataRTA.2, aes(x = Period, y = Freckled.Duck, alpha = 0.2, shape = factor(Sympch))) + scale_shape_manual(values = c(1, 16)) +
-  geom_point(position = position_jitterdodge(dodge.width = 0.1), size = 10, colour="blue") + scale_x_discrete(limits = c("Reference","1996","2017","2021/22")) + theme(legend.position = "none")
+  geom_point(position = position_jitterdodge(dodge.width = 0.1), size = 10, colour="blue") + scale_x_discrete(limits = c("Reference","1996","2017","2021/22")) + theme(legend.position = "none") + theme(axis.text = element_text(size = 14)) + theme(axis.title = element_text(size=15)) + ylab("Abundance") + ggtitle("Freckled Duck") + theme(plot.title = element_text(size = 15)) + theme(
+    axis.title.x = element_text(margin = margin(t = 10)), axis.title.y = element_text(margin = margin(r = 10))) + geom_hline(yintercept = 0.5, linetype = "dashed", color = "red")
 
+###Australian Shelduck
+comdataRTA.2[, Sympch := ifelse(Australian.Shelduck == "0", 1, 16)]
+comdataRTA.2$Sympch <- as.factor(comdataRTA.2$Sympch)
+comdataRTA.2$Sympch <- as.factor(comdataRTA.2$Sympch)
+ggplot(comdataRTA.2, aes(x = Period, y = Australian.Shelduck, alpha = 0.2, shape = factor(Sympch))) + scale_shape_manual(values = c(1, 16)) +
+  geom_point(position = position_jitterdodge(dodge.width = 0.1), size = 10, colour="blue") + scale_x_discrete(limits = c("Reference","1996","2017","2021/22")) + theme(legend.position = "none") + theme(axis.text = element_text(size = 14)) + theme(axis.title = element_text(size=15)) + ylab("Abundance") + ggtitle("Australian Shelduck") + theme(plot.title = element_text(size = 15)) + theme(
+    axis.title.x = element_text(margin = margin(t = 10)), axis.title.y = element_text(margin = margin(r = 10)))
+
+### Pink-eared Duck
+comdataRTA.2[, Sympch := ifelse(Pink.eared.Duck == "0", 1, 16)]
+comdataRTA.2$Sympch <- as.factor(comdataRTA.2$Sympch)
+comdataRTA.2$Sympch <- as.factor(comdataRTA.2$Sympch)
+ggplot(comdataRTA.2, aes(x = Period, y = Pink.eared.Duck, alpha = 0.2, shape = factor(Sympch))) + scale_shape_manual(values = c(1, 16)) +
+  geom_point(position = position_jitterdodge(dodge.width = 0.1), size = 10, colour="blue") + scale_x_discrete(limits = c("Reference","1996","2017","2021/22")) + theme(legend.position = "none") + theme(axis.text = element_text(size = 14)) + theme(axis.title = element_text(size=15)) + ylab("Abundance") + ggtitle("Pink-eared Duck") + theme(plot.title = element_text(size = 15)) + theme(
+    axis.title.x = element_text(margin = margin(t = 10)), axis.title.y = element_text(margin = margin(r = 10)))
+
+### Eurasian Coot
+comdataRTA.2[, Sympch := ifelse(Eurasian.Coot == "0", 1, 16)]
+comdataRTA.2$Sympch <- as.factor(comdataRTA.2$Sympch)
+comdataRTA.2$Sympch <- as.factor(comdataRTA.2$Sympch)
+ggplot(comdataRTA.2, aes(x = Period, y = Eurasian.Coot, alpha = 0.2, shape = factor(Sympch))) + scale_shape_manual(values = c(1, 16)) +
+  geom_point(position = position_jitterdodge(dodge.width = 0.1), size = 10, colour="blue") + scale_x_discrete(limits = c("Reference","1996","2017","2021/22")) + theme(legend.position = "none") + theme(axis.text = element_text(size = 14)) + theme(axis.title = element_text(size=15)) + ylab("Abundance") + ggtitle("Eurasian Coot") + theme(plot.title = element_text(size = 15)) + theme(
+    axis.title.x = element_text(margin = margin(t = 10)), axis.title.y = element_text(margin = margin(r = 10)))
+
+### Black-winged Stilt
+comdataRTA.2[, Sympch := ifelse(Black.winged.Stilt == "0", 1, 16)]
+comdataRTA.2$Sympch <- as.factor(comdataRTA.2$Sympch)
+comdataRTA.2$Sympch <- as.factor(comdataRTA.2$Sympch)
+ggplot(comdataRTA.2, aes(x = Period, y = Black.winged.Stilt, alpha = 0.2, shape = factor(Sympch))) + scale_shape_manual(values = c(1, 16)) +
+  geom_point(position = position_jitterdodge(dodge.width = 0.1), size = 10, colour="blue") + scale_x_discrete(limits = c("Reference","1996","2017","2021/22")) + theme(legend.position = "none") + theme(axis.text = element_text(size = 14)) + theme(axis.title = element_text(size=15)) + ylab("Abundance") + ggtitle("Black-winged Stilt") + theme(plot.title = element_text(size = 15)) + theme(
+    axis.title.x = element_text(margin = margin(t = 10)), axis.title.y = element_text(margin = margin(r = 10)))
+
+### Grey Teal
+comdataRTA.2[, Sympch := ifelse(Grey.Teal == "0", 1, 16)]
+comdataRTA.2$Sympch <- as.factor(comdataRTA.2$Sympch)
+comdataRTA.2$Sympch <- as.factor(comdataRTA.2$Sympch)
+ggplot(comdataRTA.2, aes(x = Period, y = Grey.Teal, alpha = 0.2, shape = factor(Sympch))) + scale_shape_manual(values = 16) +
+  geom_point(position = position_jitterdodge(dodge.width = 0.1), size = 10, colour="blue") + scale_x_discrete(limits = c("Reference","1996","2017","2021/22")) + theme(legend.position = "none") + theme(axis.text = element_text(size = 18)) + theme(axis.title = element_text(size=15)) + ylab("Abundance") + ggtitle("Grey.Teal") + theme(plot.title = element_text(size = 18)) + theme(
+    axis.title.x = element_text(margin = margin(t = 15)), axis.title.y = element_text(margin = margin(r = 15)))
 ```
 
 ##this chunk not needed?
