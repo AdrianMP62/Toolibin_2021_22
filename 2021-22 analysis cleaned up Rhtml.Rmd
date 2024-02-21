@@ -16,7 +16,7 @@ editor_options:
 ---
 
 ```{r, echo=FALSE, include = FALSE}
-packages <- c("mtcars","dplyr","scatterplot3d","plotly","RColorBrewer","stringr","rstudioapi","patchwork","glue","ClassDiscovery","vegan","tidyverse","lubridate","ggplot2","ggpubr","stringi","factoextra", "zoo","cluster","rgl","reshape2","ggthemes","data.table")
+packages <- c("data.table","mtcars","dplyr","scatterplot3d","plotly","RColorBrewer","stringr","rstudioapi","patchwork","glue","ClassDiscovery","vegan","tidyverse","lubridate","ggplot2","ggpubr","stringi","factoextra", "zoo","cluster","rgl","reshape2","ggthemes","data.table")
 lapply(packages, require, character.only=TRUE)
 ```
 
@@ -96,12 +96,13 @@ rawdata.T.SA2[] <- lapply(rawdata.T.SA2, as.numeric)
 Tool.SA2 <- specaccum(rawdata.T.SA2, "random", permutations = 100)
 summary(Tool.SA2)
 plot(Tool.SA2)
+```
 
 ##Multivariate analyses
 
 ###Analyses including all surveys (from both lakes) 
 
-All multivariate analyses are performed on Helinger transformed abundance data (within species abundances scaled to values between 0 and 1 and square root transformed). Surveys with richness <=1 removed to deal with an outlier identified in the 2019 analyses. Also removed the 1975 survey as this was not quantitative.
+#All multivariate analyses are performed on Helinger transformed abundance data (within species abundances scaled to values between 0 and 1 and square root transformed). Surveys with richness <=1 removed to deal with an outlier identified in the 2019 analyses. Also removed the 1975 survey as this was not quantitative.
 
 ```{r}
 comdata <- subset(rawdata, RICHNESS > 1)
@@ -232,6 +233,27 @@ comdataRTA.Simper <- simper(comdataRTA, comdataRTA.fact$All_Ref)
 summary(comdataRTA.Simper)
 ```
 
+##Plots of abundance for target species in the management plan.
+```{r}
+comdataRTA.2 <- as.data.table(comdataRTA)
+comdataRTA.2$Period <- comdataRTA.fact$Period2
+comdataRTA.2$Period <- ifelse(comdataRTA.2$Period %in% c("1996","2017","2021/22"), comdataRTA.2$Period, "Reference")
+
+
+###Freckled Duck
+comdataRTA.2[, Sympch := ifelse(Freckled.Duck == "0", 1, 16)]
+comdataRTA.2$Sympch <- as.factor(comdataRTA.2$Sympch)
+ggplot(comdataRTA.2, aes(x = Period, y = Freckled.Duck, alpha = 0.2, shape = factor(Sympch))) + scale_shape_manual(values = c(1, 16)) +
+  geom_point(position = position_jitterdodge(dodge.width = 0.1), size = 10, colour="blue") + scale_x_discrete(limits = c("Reference","1996","2017","2021/22")) + theme(legend.position = "none")
+
+```
+
+##this chunk not needed?
+```{r}
+comdataRT.h$rich <- rowSums(comdataRT!=0)
+ggplot(data=comdataRT.h, aes(x=reorder(date, order), rich)) + 
+  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Species richness", size=10) + ggtitle("Species richness") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
+```
 
 ##Sum Toolibin reference and modern data by guild count
 ```{r}
@@ -255,72 +277,35 @@ comdataRTA.guilds[comdataRTA.guilds == "Y"] <- "Reference"
 comdataRTA.guilds[comdataRTA.guilds == "M"] <- "1996-2022"
 #create short-format matrix to add in zero values for missing guilds in each survey
 comdataRTA.guilds.m <- dcast(comdataRTA.guilds, formula = Survey ~ Guild, value="Richness", fill=0)
+write.csv(comdataRTA.guilds.m, "./guildmatrix.csv")
 #convert back to long-format
-comdataRTA.guilds.2 <- reshape2::melt(comdataRTA.guilds.m) #create long-format file from matrix
+comdataRTA.guilds.2 <- as.data.table(reshape2::melt(comdataRTA.guilds.m)) #create long-format file from matrix
 #add back the Period column by matching back to the original data file
 colnames(comdataRTA.guilds.2)[2] <- 'Guild'
 colnames(comdataRTA.guilds.2)[3] <- 'Richness'
+#add Period back in to datafile
 comdataRTA.guilds.2$Period <- comdataRTA.guilds$Period[match(comdataRTA.guilds.2$Survey, c(comdataRTA.guilds$Survey))]
-comdataRTA.guilds.2$Richness.prop <- comdataRTA.guilds.2$Richness
+#create new column for values of alpha (transparency) in ggplot
+comdataRTA.guilds.2[, alphaprop := ifelse(comdataRTA.guilds.2$Period == "Reference", 0.4, 0.8)]
 ```
 
 ##Scatterplots and boxplots of guild richness by guild
 ```{r}
-ggplot(comdataRTA.guilds.2, aes(Period, Richness)) +
-  geom_jitter(width = 0.1, height = 0.0, size=2, pch=16, colour="blue", alpha = 0.3) + scale_x_discrete(limits = c("Reference", "1996-2022")) +
-  facet_wrap(vars(Guild))
+ggplot(comdataRTA.guilds.2, aes(x = Period, y = Richness, alpha = 0.4)) +
+  geom_jitter(width = 0.1, height = 0.0, size=2, pch=16, colour="blue") + scale_x_discrete(limits = c("Reference", "1996-2022")) + theme(legend.position = "none") +
+  scale_alpha_continuous(range = c(0.2, 0.8)) + facet_wrap(vars(Guild))
+
+ggplot(comdataRTA.guilds.2, aes(x = Period, y = Richness, alpha = alphaprop)) +
+  geom_violin(colour="blue", fill="lightblue") + scale_x_discrete(limits = c("Reference", "1996-2022")) + theme(legend.position = "none") + facet_wrap(vars(Guild))
 
 ggplot(comdataRTA.guilds.2, aes(Period, Richness)) +
   geom_boxplot(outlier.shape = NA, coef = 0) + scale_x_discrete(limits = c("Reference", "1996-2022")) +
-  geom_jitter(width = 0.1, height = 0.1, size=2, pch=16, colour="blue", alpha = 0.3) + 
+  geom_jitter(width = 0.1, height = 0.1, size=2, pch=16, colour="blue", alpha = 0.3) + theme(legend.position = "none") +
   facet_wrap(vars(Guild))
 ```
 
 
 
-
-
-The following bar charts show raw abundances of the above mentioned species for each survey, with those surveys in group `r G` (which contains all of the 1996 to 2022 surveys) highlighted in red. Also included are abundance plots for xxx other species specifically mentioned in the Toolibin Lake Recovery Plan.
-
-```{r fig.height = 4, fig.align='center'}
-ggplot(data=comdataRTA, aes(x=reorder(date, order), Freckled.Duck, fill = kmgrpcol)) + 
-  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Freckled Duck") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
-
-ggplot(data=comdataRT.h, aes(x=reorder(date, order), Great.Egret, fill = kmgrpcol)) + 
-  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Great Egret") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
-
-ggplot(data=comdataRT.h, aes(x=reorder(date, order), Nankeen.Night.Heron, fill = kmgrpcol)) + 
-  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Nankeen Night Heron") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
-
-ggplot(data=comdataRT.h, aes(x=reorder(date, order), Little.Pied.Cormorant, fill = kmgrpcol)) + 
-  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Little Pied Cormorant") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
-
-ggplot(data=comdataRT.h, aes(x=reorder(date, order), Grey.Teal, fill = kmgrpcol)) + 
-  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Grey Teal") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
-
-ggplot(data=comdataRT.h, aes(x=reorder(date, order), Pink.eared.Duck, fill = kmgrpcol)) + 
-  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Pink-eared Duck") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
-
-ggplot(data=comdataRT.h, aes(x=reorder(date, order), Eurasian.Coot, fill = kmgrpcol)) + 
-  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Eurasian Coot") + theme(plot.title = element_text(vjust = -8, hjust = 0.15))
-
-ggplot(data=comdataRT.h, aes(x=reorder(date, order), Australian.Shelduck, fill = kmgrpcol)) + 
-  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Australian Shelduck") + theme(plot.title = element_text(vjust = -8, hjust = 0.25))
-
-ggplot(data=comdataRT.h, aes(x=reorder(date, order), Black.winged.Stilt, fill = kmgrpcol)) + 
-  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Abundance") + scale_fill_manual(name = "Km group", values=c("grey", "red"), labels=c("Other", G)) + theme(axis.text.x = element_text(color = hist.col$kmcol)) + ggtitle("Black-winged Stilt") + theme(plot.title = element_text(vjust = -8, hjust = 0.25))
-```
-
-Waterbird species richness in November 2021 and January 2022 was 14 and
-18 respec18 species. These values are well within the range of richness
-values recorded during the 1980s, although several of the 1980s surveys
-had slightly higher richness (up to 24 species).
-
-```{r}
-comdataRT.h$rich <- rowSums(comdataRT!=0)
-ggplot(data=comdataRT.h, aes(x=reorder(date, order), rich)) + 
-  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Species richness") + ggtitle("Species richness") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
-```
 
 # INVERTEBRATES
 
