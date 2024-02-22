@@ -49,11 +49,11 @@ rawdata$VISIT_DATE <- as.Date(rawdata$VISIT_DATE, "%d/%m/%Y") #convert waterbird
 #retain 'rawdata' as an unmodified waterbird import
 ```
 
-##scatterplots by period with colour denoting whether surveys were comprehensive = reference
+##Graphs of richness by Period for Toolibin and Walbyring
 
 ```{r}
 rawdata3 <- rawdata
-rawdata3$wetland <- str_sub(row.names(rawdata3),1,1) #created new var for Toolibin or Walbyring
+rawdata3$wetland <- str_sub(row.names(rawdata3),1,1) #created new var for Toolibin or Walbyring from survey codes
 
 #Toolibin scatterplot
 rawdata3.T <- filter(rawdata3, wetland == "T")
@@ -70,39 +70,9 @@ rawdata3.W$colour <- rawdata3.W$All_Ref #new variable (colour) for depth and com
 ggplot(data = rawdata3.W, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colour = colour, alpha = 0.2), size=8, width = 0.05, height = 0.05) + xlab("Period") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(legend.position="none") + scale_color_manual(values = c("Blue", "Grey", "Red"))
 ```
 
-##species accumulation plots
-
-```{r}
-#Toolibin species accumulation for 1975+1980s with all surveys - NEED TO REPEAT WITH JUST DEPTH >0.3M and complete surveys
-rawdata.T.SA <- rawdata3.T #use data from Toolibin scatterplots above
-str(rawdata.T.SA)
-rawdata.T.SA <- rawdata.T.SA[-grep("M", rawdata.T.SA$All_Ref), ] #remove 1996+ data, denoted by TM in survey names
-rawdata.T.SA <- rawdata.T.SA[, .c(1:8,55:56)] #delete columns with factors
-rawdata.T.SA <- rawdata.T.SA %>% replace(is.na(.), 0)
-rawdata.T.SA <-as.data.frame(rawdata.T.SA)
-rawdata.T.SA[] <- lapply(rawdata.T.SA, as.numeric)
-Tool.SA <- specaccum(rawdata.T.SA, "random", permutations = 100)
-summary(Tool.SA)
-plot(Tool.SA)
-
-#Toolibin species accumulation for 1975+1980s considered to be refernce surveys
-rawdata.T.SA2 <- rawdata3.T
-rawdata.T.SA2 <- rawdata.T.SA2[rawdata.T.SA2$All_Ref  == "Y", ]
-rawdata.T.SA <- rawdata.T.SA[-grep("M", rawdata.T.SA$All_Ref), ] #remove 1996+ data, denoted by TM in survey names
-rawdata.T.SA2 <- rawdata.T.SA2[, .c(1:8,55:56)]
-rawdata.T.SA2 <- rawdata.T.SA2 %>% replace(is.na(.), 0)
-rawdata.T.SA2 <-as.data.frame(rawdata.T.SA2)
-rawdata.T.SA2[] <- lapply(rawdata.T.SA2, as.numeric)
-Tool.SA2 <- specaccum(rawdata.T.SA2, "random", permutations = 100)
-summary(Tool.SA2)
-plot(Tool.SA2)
-```
-
-##Multivariate analyses
-
 ###Analyses including all surveys (from both lakes) 
 
-#All multivariate analyses are performed on Helinger transformed abundance data (within species abundances scaled to values between 0 and 1 and square root transformed). Surveys with richness <=1 removed to deal with an outlier identified in the 2019 analyses. Also removed the 1975 survey as this was not quantitative.
+All multivariate analyses are performed on Helinger transformed abundance data (within species abundances scaled to values between 0 and 1 and square root transformed). Surveys with richness <=1 removed to deal with an outlier identified in the 2019 analyses. Also removed the 1975 survey as this was not quantitative.
 
 ```{r}
 comdata <- subset(rawdata, RICHNESS > 1)
@@ -240,7 +210,6 @@ comdataRTA.2$Period <- comdataRTA.fact$Period2
 comdataRTA.2$Period <- ifelse(comdataRTA.2$Period %in% c("1996","2017","2021/22"), comdataRTA.2$Period, "Reference")
 ```
 
-##Plots of abundances for six indicator species at Lake Toolibin
 ```{r}
 #create new columns for specifying ggplot pch values based on presence/absence of each species
 comdataRTA.2[, FD.char := ifelse(Freckled.Duck == "0", 1, 16)]
@@ -357,14 +326,7 @@ GT <- ggplot(comdataRTA.2, aes(x = Period, y = Grey.Teal, alpha = 0.2, shape = f
 grid.arrange(FD, PD, AS, GT, EC, BS, ncol = 2, nrow = 3)
 ```
 
-##this chunk not needed?
-```{r}
-comdataRT.h$rich <- rowSums(comdataRT!=0)
-ggplot(data=comdataRT.h, aes(x=reorder(date, order), rich)) + 
-  geom_col() + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size=7)) + labs(x="Survey date",y="Species richness", size=10) + ggtitle("Species richness") + theme(plot.title = element_text(vjust = -8, hjust = 0.1))
-```
 
-##Sum Toolibin reference and modern data by guild count
 ```{r}
 guilds <- read.csv("./Newdata/ToolibinGuilds.csv") #import Stuart Halse guild data
 comdataRTA.guilds <- rawdata[rawdata$All_Ref %in% c("Y","M"), ] #copy raw data and extract only reference and modern surveys
@@ -376,7 +338,6 @@ comdataRTA.guilds <- reshape2::melt(comdataRTA.guilds) #create long-format file 
 comdataRTA.guilds <- comdataRTA.guilds %>% rename_at('variable', ~'Species')
 comdataRTA.guilds <- merge(x=comdataRTA.guilds, y=guilds, by="Species", all.x=TRUE);
 comdataRTA.guilds <- as.data.table(comdataRTA.guilds[comdataRTA.guilds$value != 0, ]) #remove zero counts
-comdataRTA.guilds <- comdataRTA.guilds[, .c(1,4)]
 #sum species richness by guild
 comdataRTA.guilds <- comdataRTA.guilds %>% group_by(survey,All_Ref,Guild) %>% summarise(no_rows = length(Guild))
 #change column headings
@@ -417,8 +378,6 @@ ggplot(comdataRTA.guilds.2, aes(Period, Richness)) +
 
 
 # INVERTEBRATES
-
-
 
 
 ## Multivariate analysis of composition
