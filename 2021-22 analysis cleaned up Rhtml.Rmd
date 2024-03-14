@@ -630,85 +630,30 @@ m <- ms %>%
   bind_rows() %>%
   group2NA("id", "wetland")
 
-plot_ly(color = ~factor(wetland), colors = c("lightblue", "blue", "red"), showlegend = T) %>%
+plot_ly(color = ~factor(wetland), colors = c("orange", "blue", "red"), showlegend = T) %>%
   add_markers(data = mds3.I.pts, x = ~MDS1B, y = ~MDS2B, z = ~MDS3B) %>%
   add_paths(data = m, x = ~MDS1B, y = ~MDS2B, z = ~MDS3B)
 ```
 
+#cluster analyses by composition for 1996 to 2022 samples (excluding April 2017)
+```{r}
+clusdist <- vegdist(rawdata.I3, method="bray")
+clusanal <- hclust(clusdist, method="average") 
+plot(clusanal)
+```
+
+```{r}
+stats::rect.hclust
+```
+
+```{r}
+plot(clusanal, las = 1, 
+     xlab="Survey", ylab="Bray")
+    rect.hclust(clusanal, 4, border="blue")
+```
 
 
-
-
-
-##Stacked richness column plots for Lake Toolibin
-
-Below are stacked column plots of species richness by major taxonomic
-group by individual samples or by sampling period (all 3 samples for
-each lake aggregated within sampling period).
-
-The first plot shows richness within each of the 15 samples collected
-from Lake Toolibin between 1996 and 2022 and the next one shows richness
-combined across samples for each period.
-
-Species richness in 1996 varied from 34 to 40/sample, with 50 species in
-total. Lower richness in April 2017 was followed by richness values in
-October 2017 that were slightly higher (38 to 44 species/sample, total
-60) than in 1996. The low April 2017 richness most likely reflects an
-early stage in community development, being only 2 months after the Feb
-fill event and is not considered further in this discussion, although
-some species were present in April 2017 that were absent later in the
-year.
-
-Richness in Nov 2021 was lower than in Oct 2017 at the sample level (26
-to 33 species/sample) but the 56 species collected across the three
-samples is almost as high as the 60 in Oct 2017, indicating greater
-heterogeneity amongst the Nov 2021 samples. In January 2022 richness was
-slightly higher sample level (30 to 34 species) but had declined
-slightly across the lake (50 species). Of particular note is that
-coleopteran and odonate diversity declined between the two seasons but
-this was partly offset by richer Diptera and Hemipteran assemblages.
-
-Some odonate species may have all pupated by January and left the lake,
-with or without first laying eggs that had not become identifiable
-larvae. Some beetles may also have left the lake after terrestrial
-pupation, although adults are generally aquatic when not flying between
-wetlands and can return to the same waterbody, or some species may not
-have survived to maturity. The diversity of damselflies and dragonflies
-(Odonata) was lower in 2021-22 (13 and 10 species in Nov and Jan) than
-in 1996 (17 species) and Oct 2017 (16 species).
-
-Hemipteran diversity dramatically increased between Nov 2021 (2 taxa)
-and Jan 2022 (7 taxa), partly as a result of species resolution becoming
-possible with a change from juveniles to adults. This is the highest
-richness recorded for this group at Toolibin.
-
-Copepods were less diverse in 2021/22 (same three species in both
-seasons) than in Oct 2017, but were of similar diversity to that present
-in 1996 (four species, albeit with only one in common). One of the
-copepods present in 1996 but not subsequently was <i>Apocyclops
-dengizicus</i> whose presence in 1996 reflects the higher salinity in
-that year.
-
-Cale and Pinder (2019) noted that ostracods were depauperate in Oct 2017
-(three species), relative to 1996 (6 species) and suggested this could
-be due to a decline in viability of the sediment egg bank over the 21
-years between 1996 and 2017 inundation events, and/or fewer freshwater
-sources of colonisation in the surrounding landscape. It is thus
-surprising that in Nov 2021 this group was richer (9 species) than in
-1996. It may have been that larger numbers and higher diversity of
-propagules or adults were washed into the lake during the 2021 winter
-inflows than in the 2017 summer fill, in addition to there being a
-viable egg bank left over from the 2017 fill as a base richness, with
-there being only 4 years between these fills. By Jan 2022 ostracod
-diversity had declined again to just 3 species, probably representing
-completion of lifecycles.
-
-The number of cladoceran species (water fleas) was greater in Jan 2022
-(12 species) than in either 1996 (8 species) or Oct 2017 (10 species).
-
-Some other minor differences between sampling events include the absence
-of amphipods (1 species) in 2021-22, presence of annelids only in 2017
-(1 species) and presence of molluscs (1 species) only in 2021-22.
+Stacked invertebrate richness plots
 
 ##Load and format data
 ```{r}
