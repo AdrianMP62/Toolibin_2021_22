@@ -632,7 +632,53 @@ m <- ms %>%
 
 plot_ly(color = ~factor(wetland), colors = c("orange", "blue", "red"), showlegend = T) %>%
   add_markers(data = mds3.I.pts, x = ~MDS1B, y = ~MDS2B, z = ~MDS3B) %>%
-  add_paths(data = m, x = ~MDS1B, y = ~MDS2B, z = ~MDS3B)
+  add_paths(data = m, x = ~MDS1B, y = ~MDS2B, z = ~MDS3B) %>%
+  layout(
+    xaxis = list(
+      showline = TRUE, # Show x-axis line
+      linecolor = 'black', # Color of x-axis line
+      linewidth = 2, # Width of x-axis line
+      gridcolor = 'rgba(0, 0, 0, 0.5)', # Darker gridlines color
+      gridwidth = 1 # Width of gridlines
+    ),
+    yaxis = list(
+      showline = TRUE, # Show y-axis line
+      linecolor = 'black', # Color of y-axis line
+      linewidth = 2, # Width of y-axis line
+      gridcolor = 'rgba(0, 0, 0, 0.5)', # Darker gridlines color
+      gridwidth = 1 # Width of gridlines
+    ),
+    zaxis = list(
+      showline = TRUE, # Show z-axis line
+      linecolor = 'black', # Color of z-axis line
+      linewidth = 2, # Width of z-axis line
+      gridcolor = 'rgba(0, 0, 0, 0.5)', # Darker gridlines color
+      gridwidth = 1 # Width of gridlines
+    ),
+    scene = list(
+      xaxis = list(
+        showline = TRUE, # Show x-axis line
+        linecolor = 'black', # Color of x-axis line
+        linewidth = 2, # Width of x-axis line
+        gridcolor = 'rgba(0, 0, 0, 0.5)', # Darker gridlines color
+        gridwidth = 1 # Width of gridlines
+      ),
+      yaxis = list(
+        showline = TRUE, # Show y-axis line
+        linecolor = 'black', # Color of y-axis line
+        linewidth = 2, # Width of y-axis line
+        gridcolor = 'rgba(0, 0, 0, 0.5)', # Darker gridlines color
+        gridwidth = 1 # Width of gridlines
+      ),
+      zaxis = list(
+        showline = TRUE, # Show z-axis line
+        linecolor = 'black', # Color of z-axis line
+        linewidth = 2, # Width of z-axis line
+        gridcolor = 'rgba(0, 0, 0, 0.5)', # Darker gridlines color
+        gridwidth = 1 # Width of gridlines
+      )
+    )
+  )
 ```
 
 #cluster analyses by composition for 1996 to 2022 samples (excluding April 2017)
@@ -647,9 +693,32 @@ stats::rect.hclust
 ```
 
 ```{r}
-plot(clusanal, las = 1, 
-     xlab="Survey", ylab="Bray")
-    rect.hclust(clusanal, 4, border="blue")
+#create new table with site groups to then create colour codes for plotting cluster analysis
+groups <- data.frame(Column1 = rep(NA, 30))
+row.names(groups) <- rownames(rawdata.I3)
+for (i in 1:nrow(groups)) {
+  first_letter <- substr(rownames(groups)[i], 1, 1)
+  if (first_letter %in% c("T")) {
+    groups[i, "Column1"] <- "blue"
+  } else if (first_letter %in% c("W")) {
+    groups[i, "Column1"] <- "orange"
+  } else {
+    groups[i, "Column1"] <- "red"
+  }
+}
+
+groups$sample <- row.names(groups)
+groups$order <- clusanal$order
+group_colours <- groups$Column1
+
+
+CREATE NEW GROUPS from clusanal
+
+plot(clusanal, las = 1, xlab="Survey", ylab="Bray")
+
+
+
+str(clusanal)
 ```
 
 
