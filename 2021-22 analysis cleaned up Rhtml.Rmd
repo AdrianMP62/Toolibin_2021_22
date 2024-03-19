@@ -16,7 +16,7 @@ editor_options:
 ---
 
 ```{r, echo=FALSE, include = FALSE}
-packages <- c("gridExtra", "data.table","mtcars","dplyr","scatterplot3d","plotly","RColorBrewer","stringr","rstudioapi","patchwork","glue","ClassDiscovery","vegan","tidyverse","lubridate","ggplot2","ggpubr","stringi","factoextra", "zoo","cluster","rgl","reshape2","ggthemes","data.table")
+packages <- c("gridExtra","dendextend","data.table","mtcars","dplyr","scatterplot3d","plotly","RColorBrewer","stringr","rstudioapi","patchwork","glue","ClassDiscovery","vegan","tidyverse","lubridate","ggplot2","ggpubr","stringi","factoextra", "zoo","cluster","rgl","reshape2","ggthemes","data.table")
 lapply(packages, require, character.only=TRUE)
 ```
 
@@ -721,17 +721,7 @@ for (i in 1:nrow(groups)) {
 groups$labels <- row.names(groups)
 matching_indices <- match(clusanal$labels, groups$labels)
 clusanal$colour <- as.factor(ifelse(!is.na(matching_indices), groups$Column1[matching_indices], NA))
-
 groups$colour <- clusanal$colour
-
-
-clusanal_d <- as.dendrogram(clusanal)
-label_colours(clusanal_d)
-
-
-plot(clusanal, las = 1, xlab="Survey", ylab="Bray", col = clusanal$colour)
-
-dendro_label(clusanal)
 
 
 str(clusanal$labels)
@@ -739,10 +729,10 @@ str(clusanal$labels)
 
 
 
-
+#TRYING TO CODE COLOURS INTO CLUSTER PLOT LABELS - CODE FROM https://cran.r-project.org/web/packages/dendextend/vignettes/Cluster_Analysis.html
 ```{r}
-rawdata.I3.2 <- as.data.table(rawdata.I3)
-rawdata.I3.2$group <- groups$Column1
+rawdata.I3.2 <- rawdata.I3)
+rawdata.I3.2$group <- groups$colour
 
 d_iris <- vegdist(iris2, method = "bray")
 hc_iris <- hclust(d_iris, method = "average")
