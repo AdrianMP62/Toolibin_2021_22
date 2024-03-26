@@ -729,103 +729,7 @@ str(clusanal$labels)
 
 
 
-#TRYING TO CODE COLOURS INTO CLUSTER PLOT LABELS - CODE FROM https://cran.r-project.org/web/packages/dendextend/vignettes/Cluster_Analysis.html
-```{r}
-rawdata.I3.2 <- rawdata.I3)
-rawdata.I3.2$group <- groups$colour
-
-d_iris <- vegdist(iris2, method = "bray")
-hc_iris <- hclust(d_iris, method = "average")
-iris_species <- rev(levels(iris[,5]))
-
-library(dendextend)
-dend <- as.dendrogram(hc_iris)
-# order it the closest we can to the order of the observations:
-dend <- rotate(dend, 1:150)
-
-# Color the branches based on the clusters:
-dend <- color_branches(dend, k=3) #, groupLabels=iris_species)
-
-# Manually match the labels, as much as possible, to the real classification of the flowers:
-labels_colors(dend) <-
-   rainbow_hcl(3)[sort_levels_values(
-      as.numeric(iris[,5])[order.dendrogram(dend)]
-   )]
-
-# We shall add the flower type to the labels:
-labels(dend) <- paste(as.character(iris[,5])[order.dendrogram(dend)],
-                           "(",labels(dend),")", 
-                           sep = "")
-# We hang the dendrogram a bit:
-dend <- hang.dendrogram(dend,hang_height=0.1)
-# reduce the size of the labels:
-# dend <- assign_values_to_leaves_nodePar(dend, 0.5, "lab.cex")
-dend <- set(dend, "labels_cex", 0.5)
-# And plot:
-par(mar = c(3,3,3,7))
-plot(dend, 
-     main = "Clustered Iris data set
-     (the labels give the true flower species)", 
-     horiz =  TRUE,  nodePar = list(cex = .007))
-legend("topleft", legend = iris_species, fill = rainbow_hcl(3))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Stacked invertebrate richness plots
+##Stacked invertebrate richness plots
 
 ##Load and format data
 ```{r}
@@ -849,7 +753,7 @@ Inv.fact.orig <- read.csv("./Newdata/Invert factors.csv", row.names = 1)
 # Aggregate data by taxonomic group and sample for just Lake Toolibin and produce a stacked column plot
 Inv.stack.T <- subset(Inv.stack, Wetland %in% c("T","S")) #create Toolibin only dataset
 Inv.stack.T.agg <- aggregate(data=Inv.stack.T, Presence ~ Sample + Group, FUN = "sum") #aggregate count data by species and survey
-Inv.stack.T.agg <- Inv.stack.T.agg[!Inv.stack.T.agg$Group=="Nematodes", ]
+Inv.stack.T.agg <- Inv.stack.T.agg[!Inv.stack.T.agg$Group %in% c("Nematodes","Turbellarians","Hydrozoans","Sponges"), ]
 #Inv.fact.orig$Period <- substr(row.names(Inv.fact.orig), 4,6) #not needed now?
 Inv.stack.T.agg$Order <- Inv.fact.orig[match(Inv.stack.T.agg$Sample, row.names(Inv.fact.orig)), 4] #add in a variable for ordering the samples on the column plots- from the factor file.
 Inv.stack.T.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
@@ -857,210 +761,38 @@ Inv.stack.T.agg < setorder(Inv.stack.T.agg, cols = "Grouporder") #order by taxon
 Inv.stack.T.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
 ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporder)) + 
   geom_bar(stat="identity", colour = "black") +
-  scale_fill_manual(values = c("gray75","gray58","gray30","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","yellowgreen","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('sponges','hydrozoans','turbellarians','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
+  scale_fill_manual(values = c("#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","yellowgreen","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
   xlab("Sample") +
   ylab("Number of invertebrate species") + 
   theme(axis.text = element_text(size = 12)) + 
   theme(axis.title = element_text(size = 15)) +
   theme(axis.text.x=element_text(angle = -90, hjust = 0)) +
   theme(axis.title.y = element_text(vjust = +2.5)) +
-  theme(legend.title=element_blank())
+  theme(legend.title=element_blank()) + 
+    geom_vline(xintercept = c(3.5, 6.5, 9.5, 12.5, 15.5), color = "black", linetype = "solid")
 ```
 
-```{r}
-cit <- citation("vegan")
-bib_tex <- toBibtex(cit)
-print(bib_tex)
-
-
-```
-
-
-Need to remove rotifers and protozoans from richness.
 
 ```{r fig.align = 'center'}
-# Aggregate data by taxonomic group and sampling period for Lake Toolibin and produce stacked column plot of richness
-Inv.stack.TW <- Inv.stack.T
-Inv.stack.TW$Period <- substr(Inv.stack.T$Sample, 4,6)
-Inv.stack.TW.agg <- aggregate(data=Inv.stack.TW, Presence ~ Period + Code, FUN = "sum") #aggregate count data by species and survey
-Inv.stack.TW.agg$Group <- Taxonomy3[match(Inv.stack.TW.agg$Code, Taxonomy3$Code), 2] #add invertebrate group to the data field to be used for stacking.
-Inv.stack.TW.agg$Presence <- replace(Inv.stack.TW.agg$Presence, Inv.stack.TW.agg$Presence >1, 1)
-Inv.stack.TW.agg2 <- aggregate(data=Inv.stack.TW.agg, Presence ~ Period + Group, FUN = "sum") #aggregate count data by species and survey
-Inv.stack.TW.agg2$Order <- Inv.fact[match(Inv.stack.TW.agg2$Period, Inv.fact$Period), 3] #add in a variable for ordering the samples on the column plots- from the factor file.
-ggplot(Inv.stack.TW.agg2, aes(x=reorder(Period, Order), y=Presence, fill=Group)) + geom_bar(stat="identity", colour = "black") + scale_fill_manual(values = c("#000000","#FF0000","#00FF00","#0000FF","#0099CC", "#FFFF00","#00FFFF","#FF00FF","#808080","#800000","#808000","#008000","#800080","#000080","#C0C0C0"))
-
-#to change order of fills in a stack:
-fill = factor(Group, levels=c("Protozoans", "r", "f"))
-```
-
-The next two plots are show per sample and per wetland richness for Lake
-Walbyring. As was discussed in Cale and Pinder (2019), richness at
-Walbyring in 2017 was much lower than it was in 1996, but it increased
-moderately in 2021-22. Compared to both 1996 and Oct 2017, the 2021/22
-samples had more species of cladocerans, dipterans, hemipterans. By
-contrast annelids were present in 1996 and 2021 but absent in 2021/22
-and the number of copepod species was lower in 2021/22 than in either
-1996 or 2021.
-
-Molluscs were more prevalent in 2021/22 (occurred in a greater
-proportion of samples) and. for the first time, included two species in
-Jan 2022. Amphipods also returned to Walbyring, having been present in
-1996 but not in 2017. By contrast annelids were absent in 2021/22 and
-water mites were largely absent, whereas annelids were present in almost
-all samples collected in 1996 and 2017 and mites present in all samples
-in Oct 2017. Beetles (Coleptera) were as diverse as in 2017 but lower
-than in 1996.
-
-```{r fig.align = 'center'}
-# Aggregate data by taxonomic group and sample for just Lake Walbyring and produce a stacked column plot
-Inv.stack.W <- subset(Inv.stack, Wetland %in% "W") #create Toolibin only dataset
+# Aggregate data by taxonomic group and sample for just Lake Toolibin and produce a stacked column plot
+Inv.stack.W <- subset(Inv.stack, Wetland %in% c("W","S")) #create Toolibin only dataset
 Inv.stack.W.agg <- aggregate(data=Inv.stack.W, Presence ~ Sample + Group, FUN = "sum") #aggregate count data by species and survey
-Inv.stack.W.agg$Order <- Inv.fact[match(Inv.stack.W.agg$Sample, row.names(Inv.fact)), 3] #add in a variable for ordering the samples on the column plots- from the factor file.
-ggplot(Inv.stack.W.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Group)) + geom_bar(stat="identity", colour = "black") + scale_fill_manual(values = c("#000000","#FF0000","#00FF00","#0000FF","#FF33CC", "#FFFF00","#00FFFF","#FF00FF","#808080","#800000","#808000","#008000","#800080","#000080","#C0C0C0"))
+Inv.stack.W.agg <- Inv.stack.W.agg[!Inv.stack.W.agg$Group %in% c("Nematodes","Turbellarians","Hydrozoans","Sponges"), ]
+#Inv.fact.orig$Period <- substr(row.names(Inv.fact.orig), 4,6) #not needed now?
+Inv.stack.W.agg$Order <- Inv.fact.orig[match(Inv.stack.W.agg$Sample, row.names(Inv.fact.orig)), 4] #add in a variable for ordering the samples on the column plots- from the factor file.
+Inv.stack.W.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.W.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
+Inv.stack.W.agg < setorder(Inv.stack.W.agg, cols = "Grouporder") #order by taxonomic group
+Inv.stack.W.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.W.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
+ggplot(Inv.stack.W.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporder)) + 
+  geom_bar(stat="identity", colour = "black") +
+  scale_fill_manual(values = c("#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","yellowgreen","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
+  xlab("Sample") +
+  ylab("Number of invertebrate species") + 
+  theme(axis.text = element_text(size = 12)) + 
+  theme(axis.title = element_text(size = 15)) +
+  theme(axis.text.x=element_text(angle = -90, hjust = 0)) +
+  theme(axis.title.y = element_text(vjust = +2.5)) +
+  theme(legend.title=element_blank()) +
+  geom_vline(xintercept = c(3.5, 6.5, 9.5, 12.5, 15.5), color = "black", linetype = "solid")
 ```
 
-```{r fig.align = 'center'}
-# Aggregate data by taxonomic group and sampling period for Lake Walbyring and produce stacked column plot of richness
-Inv.stack.WW <- Inv.stack.W
-Inv.stack.WW$Period <- substr(Inv.stack.T$Sample, 4,6)
-Inv.stack.WW.agg <- aggregate(data=Inv.stack.WW, Presence ~ Period + Code, FUN = "sum") #aggregate count data by species and survey
-Inv.stack.WW.agg$Group <- Taxonomy3[match(Inv.stack.WW.agg$Code, Taxonomy3$Code), 2] #add invertebrate group to the data field to be used for stacking.
-Inv.stack.WW.agg$Presence <- replace(Inv.stack.WW.agg$Presence, Inv.stack.WW.agg$Presence >1, 1)
-Inv.stack.WW.agg2 <- aggregate(data=Inv.stack.WW.agg, Presence ~ Period + Group, FUN = "sum") #aggregate count data by species and survey
-Inv.stack.WW.agg2$Order <- Inv.fact[match(Inv.stack.WW.agg2$Period, Inv.fact$Period), 3] #add in a variable for ordering the samples on the column plots- from the factor file.
-ggplot(Inv.stack.WW.agg2, aes(x=reorder(Period, Order), y=Presence, fill=Group)) + geom_bar(stat="identity", colour = "black") + scale_fill_manual(values = c("#000000","#FF0000","#00FF00","#0000FF","#0099CC", "#FFFF00","#00FFFF","#FF00FF","#808080","#800000","#808000","#008000","#800080","#000080","#C0C0C0"))
-```
-
-The next plot shows total richness across both lakes in each sampling
-period. Diversity across both lakes was greatest in 1996, despite the
-much higher salinity. Total diversity was very slightly lower in 2021/22
-than in 2017.
-
-```{r fig.align = 'center'}
-# Aggregate data by taxonomic group and sampling period for both lakes and produce stacked column plot of richness
-Inv.stack.TW <- Inv.stack
-Inv.stack.TW$Period <- substr(Inv.stack.TW$Sample, 4,6)
-Inv.stack.TW.agg <- aggregate(data=Inv.stack.TW, Presence ~ Period + Code, FUN = "sum") #aggregate count data by species and survey
-Inv.stack.TW.agg$Group <- Taxonomy3[match(Inv.stack.TW.agg$Code, Taxonomy3$Code), 2] #add invertebrate group to the data field to be used for stacking.
-Inv.stack.TW.agg$Presence <- replace(Inv.stack.TW.agg$Presence, Inv.stack.TW.agg$Presence >1, 1)
-Inv.stack.TW.agg2 <- aggregate(data=Inv.stack.TW.agg, Presence ~ Period + Group, FUN = "sum") #aggregate count data by species and survey
-Inv.stack.TW.agg2$Order <- Inv.fact[match(Inv.stack.TW.agg2$Period, Inv.fact$Period), 3] #add in a variable for ordering the samples on the column plots- from the factor file.
-ggplot(Inv.stack.TW.agg2, aes(x=reorder(Period, Order), y=Presence, fill=Group)) + geom_bar(stat="identity", colour = "black") + scale_fill_manual(values = c("#000000","#FF0000","#00FF00","#0000FF","#0099CC", "#FFFF00","#00FFFF","#FF00FF","#808080","#800000","#808000","#008000","#800080","#000080","#C0C0C0"))
-```
-
-To put composition of the Toolibin and Walbyring invertebrate
-communities in a regional context, comparable data from six other good
-condition Wheatbelt tree-dominated freshwater wetlands were included in
-analyses. These were all sampled in the Biological Survey of the South
-West Agricultural Zone by Pinder et al. (2004) in the late 1990s and are
-all in the central and southern Wheatbelt. Sampling methods and effort
-were identical to that used at Toolibin and Walbyring at a single sample
-level. To achieve this some lumping of species to genera level was used
-to make taxonomic composition more comparable, especially for beetles.
-
-```{r include=FALSE}
-rawdata.IP <- rawdata.I.orig
-row.names(rawdata.IP) <- gsub("[.]", "-", row.names(rawdata.IP))
-Inv.fact.IP <- Inv.fact.orig
-rawdata.IP[is.na(rawdata.IP)]<-0 # replace na with 0
-```
-
-## Multivariate analysis of composition
-
-```{r include=FALSE}
-mds1.IP <- metaMDS(rawdata.IP, distance ="bray", k=2) #nMDS in 2 dimensions
-#Extract mds2 coordinates and create new dataframe with coordinates, survey, and survey period
-mds1.IP.pts <- as.data.frame(mds1.IP$points) #extract 2D ordination coordinates (points)
-mds1.IP.pts$Sample <- row.names(mds1.IP.pts)
-row.names(mds1.IP.pts) <-gsub("[.]", "-", row.names(mds1.IP.pts))
-mds1.IP.pts$Year <- as.factor(Inv.fact.IP[match(row.names(mds1.IP.pts), row.names(Inv.fact.IP)), 1])
-```
-
-The ordination shows communities for these six 'SAP' sites (purple
-circles) around the periphery of the cloud of Toolibin/Walbyring
-samples. This suggests the Toolibin and Walbyring communities are not
-greatly different from these other samples
-
-```{r fig.align = 'center'}
-#first set axis limits based on maximum values of coordinates
-Xmin <- min(mds1.IP.pts$MDS1)*1.2 
-Xmax <- max(mds1.IP.pts$MDS1)*1.2
-Ymin <- min(mds1.IP.pts$MDS2)*1.2
-Ymax <- max(mds1.IP.pts$MDS2)*1.2
-ggplot(mds1.IP.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Year), size=5) + coord_fixed(ratio = 1) + geom_text(aes(label=Sample), size=2, vjust=1, hjust=1.3)
-```
-
-This is the same ordination plot but with size of symbols scaled to
-richness (cubed for exaggeration) of the communities. This indicates
-that most of the Toolibin and Walbyring samples, other than those
-sampled in April 2017, had communities that were as rich as these other
-wetlands.
-
-```{r fig.align = 'center'}
-mds1.IP.pts$Richness <- rowSums(rawdata.IP)
-ggplot(mds1.IP.pts, aes(x=MDS1, y=MDS2, size=Richness)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(fill=Year), pch=21) + coord_fixed(ratio = 1) + geom_text(aes(label=Sample), size=2, vjust=1, hjust=1.3) + scale_size(range = c(1, 10))
-```
-
-Repeat ordination without April 2017 data. In this case stress is \>0.18
-so axes 1v2 of a 3D ordination is used.
-
-```{r, include=FALSE}
-rawdata.noA17 <- as.data.frame(rawdata.I.orig) %>% filter(!str_detect(rownames(rawdata.I.orig), 'A17'))
-row.names(rawdata.noA17) <- gsub("[.]", "-", row.names(rawdata.noA17))
-Inv.fact.noA17 <- as.data.frame(Inv.fact.IP) %>% filter(!str_detect(rownames(Inv.fact.IP), 'A17'))
-rawdata.noA17[is.na(rawdata.noA17)]<-0 # replace na with 0
-```
-
-```{r include=FALSE}
-mds1.noA17 <- metaMDS(rawdata.noA17, distance ="bray", k=3) #nMDS in 2 dimensions
-#Extract mds2 coordinates and create new dataframe with coordinates, survey, and survey period
-mds1.noA17.pts <- as.data.frame(mds1.noA17$points) #extract 2D ordination coordinates (points)
-mds1.noA17.pts$Sample <- row.names(mds1.noA17.pts)
-row.names(mds1.noA17.pts) <-gsub("[.]", "-", row.names(mds1.noA17.pts))
-mds1.noA17.pts$Year <- as.factor(Inv.fact.noA17[match(row.names(mds1.noA17.pts), row.names(Inv.fact.noA17)), 1])
-```
-
-```{r, include=FALSE}
-mds1.noA17.pts$Richness <- rowSums(rawdata.noA17)
-```
-
-```{r fig.align = 'center'}
-#first set axis limits based on maximum values of coordinates
-Xmin <- min(mds1.noA17.pts$MDS1)*1.2 
-Xmax <- max(mds1.noA17.pts$MDS1)*1.2
-Ymin <- min(mds1.noA17.pts$MDS2)*1.2
-Ymax <- max(mds1.noA17.pts$MDS2)*1.2
-ggplot(mds1.noA17.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(fill=Year), pch=21, size=10) + coord_fixed(ratio = 1) + geom_text(aes(label=Sample), size=2, vjust=1, hjust=1.3)
-```
-
-The Toolibin and Walbyring samples are overlaid on a plot of salinity
-
-```{r}
-TWrich <- read.csv("./Data/SAP sal richness.csv", row.names = 1)
-TWrich$Period <- as.factor(TWrich$Period)
-```
-
-```{r}
-ggplot(TWrich) + geom_point(aes(salinity, SAPrichness, colour=Period), pch=21, size=5) + scale_x_log10() + geom_point(aes(salinity, TWrichness, colour=Period), pch=19, size=5)
-```
-
-```{r}
-TWrich <- read.csv("./Data/SAP sal richness2.csv", row.names = 1)
-TWrich$Period <- as.factor(TWrich$Period)
-str(TWrich)
-```
-
-```{r}
-ggplot(TWrich, aes(salinity, SAPrichness, colour=Period, size=5)) + scale_x_log10() + geom_point(colour=Period) + scale_shape_manual(values = c(19,1,1,1,1))
-
-
-ggplot(TWrich, aes(x = salinity, y = SAPrichness)) + geom_point(aes(colour="black", shape=factor(Period), fill=factor(Period)), size=5) + scale_shape_manual(values = c(1,19,19,19,19)) + scale_fill_manual(values=c("white", "red", "blue", "green", "black")) + scale_x_log10() 
-
-
-p <- ggplot(TWrich, aes(salinity, SAPrichness)) +
-  geom_point(aes(colour = factor(Period)))
-p + scale_fill_manual(values = c("white", "red", "blue", "green", "black"))
-
-
-
-```
