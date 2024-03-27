@@ -802,14 +802,14 @@ ggplot(Inv.stack.W.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporde
 ##Load and format data
 ```{r}
 #create long file for aggregation in next chunks
-rawdata.IR.orig <- t(read.csv("./Newdata/Invert matrix for richness2.csv", row.names = 1))
+rawdata.IR.orig <- t(read.csv("./Newdata/Invert matrix for richness by period.csv", row.names = 1))
 rawdata.IR <- as.matrix(rawdata.IR.orig)
 Inv.stack <- as.data.frame(as.table(rawdata.IR))
-colnames(Inv.stack) <- c("Sample", "Code", "Presence")
-Inv.stack$Wetland <- substr(Inv.stack$Sample, 1, 1) #create new variable for wetland (Toolibin or Walbyring)
-Inv.stack$Period <- substr(Inv.stack$Sample, 4,6) #create new variable for survey period
-Inv.stack$Period <- gsub("^(?!N|O|J|D|A).*", "ref", Inv.stack$Period, perl = TRUE) #substitute ref in the Period column
-Inv.stack$Sample <-gsub("[.]", "-", Inv.stack$Sample) #convert dot in sample names to a dash for consistency between files (the dots are created on sample import).
+colnames(Inv.stack) <- c("Period", "Code", "Presence")
+Inv.stack$Wetland <- substr(Inv.stack$Period, 1, 1) #create new variable for wetland (Toolibin or Walbyring)
+#Inv.stack$Period <- substr(Inv.stack$Sample, 4,6) #create new variable for survey period
+#Inv.stack$Period <- gsub("^(?!N|O|J|D|A).*", "ref", Inv.stack$Period, perl = TRUE) #substitute ref in the Period column
+Inv.stack$Period <-gsub("[.]", "-", Inv.stack$Period) #convert dot in sample names to a dash for consistency between files (the dots are created on sample import).
 Taxonomy3 <- read.csv("./Newdata/Taxonomy3.csv")
 colnames(Taxonomy3) <- c("Group", "Group.order", "Code", "LowestID")
 Inv.stack$Group <- Taxonomy3[match(Inv.stack$Code, Taxonomy3$Code), 1] #add invertebrate group to the data field to be used for stacking.
@@ -820,8 +820,9 @@ Inv.fact.orig <- read.csv("./Newdata/Invert factors.csv", row.names = 1)
 ```{r fig.align = 'center'}
 # Aggregate data by taxonomic group and sample for just Lake Toolibin and produce a stacked column plot
 Inv.stack.T.G <- subset(Inv.stack, Wetland %in% c("T")) #create Toolibin only dataset
-Inv.stack.T.G.agg <- aggregate(data=Inv.stack.T.G, Presence ~ Period + Group, FUN = "max") #aggregate count data by species and survey
+Inv.stack.T.G.agg <- aggregate(data=Inv.stack.T.G, Presence ~ Period + Group, FUN = "sum") #aggregate count data by species and survey
 Inv.stack.T.G.agg <- Inv.stack.T.G.agg[!Inv.stack.T.G.agg$Group %in% c("Nematodes","Turbellarians","Hydrozoans","Sponges"), ]
+Inv.stack.T.G.agg$Period <- substr(Inv.stack.T.G.agg$Period, 3, 5)
 #Inv.fact.orig$Period <- substr(row.names(Inv.fact.orig), 4,6) #not needed now?
 Inv.stack.T.G.agg$Order <- Inv.fact.orig[match(Inv.stack.T.G.agg$Period, Inv.fact.orig$Survey), 4] #add in a variable for ordering the samples on the column plots- from the factor file.
 Inv.stack.T.G.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.G.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
@@ -839,8 +840,7 @@ ggplot(Inv.stack.T.G.agg, aes(x=reorder(Period, Order), y=Presence, fill=Groupor
   theme(axis.title = element_text(size = 15)) +
   theme(axis.text.x=element_text(angle = -90, hjust = 0)) +
   theme(axis.title.y = element_text(vjust = +2.5)) +
-  theme(legend.title=element_blank()) + 
-    geom_vline(xintercept = c(1.5, 2.5, 3.5, 4.5), color = "black", linetype = "solid")
+  theme(legend.title=element_blank())
 ```
 
 
