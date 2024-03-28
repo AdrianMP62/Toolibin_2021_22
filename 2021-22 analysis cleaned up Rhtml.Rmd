@@ -688,53 +688,13 @@ clusanal <- hclust(clusdist, method="average")
 plot(clusanal, xlab="Survey", ylab="Bray")
 ```
 
-```{r}
-str(clusanal)
-```
-
-```{r}
-stats::rect.hclust
-```
-
-```{r}
-#create new table with site groups to then create colour codes for plotting cluster analysis
-groups <- data.frame(Column1 = rep(NA, 30))
-row.names(groups) <- rownames(rawdata.I3)
-for (i in 1:nrow(groups)) {
-  first_letter <- substr(rownames(groups)[i], 1, 1)
-  if (first_letter %in% c("T")) {
-    groups[i, "Column1"] <- "blue"
-  } else if (first_letter %in% c("W")) {
-    groups[i, "Column1"] <- "orange"
-  } else {
-    groups[i, "Column1"] <- "red"
-  }
-}
-
-
-
-
-```
-
-```{r}
-#create new variable in clusanal with colours for labels by matching labels against groups
-groups$labels <- row.names(groups)
-matching_indices <- match(clusanal$labels, groups$labels)
-clusanal$colour <- as.factor(ifelse(!is.na(matching_indices), groups$Column1[matching_indices], NA))
-groups$colour <- clusanal$colour
-
-
-str(clusanal$labels)
-```
-
-
 
 ##Stacked invertebrate richness plots with samples seperate
 
 ##Load and format data
 ```{r}
 #create long file for aggregation in next chunks
-rawdata.IR.orig <- t(read.csv("./Newdata/Invert matrix for richness2.csv", row.names = 1))
+rawdata.IR.orig <- t(read.csv("./Newdata/Invert matrix for richness3.csv", row.names = 1))
 rawdata.IR <- as.matrix(rawdata.IR.orig)
 Inv.stack <- as.data.frame(as.table(rawdata.IR))
 colnames(Inv.stack) <- c("Sample", "Code", "Presence")
@@ -749,19 +709,23 @@ Inv.stack$Presence <- as.numeric(Inv.stack$Presence)
 Inv.fact.orig <- read.csv("./Newdata/Invert factors.csv", row.names = 1)
 ```
 
+#Tolibin plots by sample
 ```{r fig.align = 'center'}
 # Aggregate data by taxonomic group and sample for just Lake Toolibin and produce a stacked column plot
 Inv.stack.T <- subset(Inv.stack, Wetland %in% c("T","S")) #create Toolibin only dataset
 Inv.stack.T.agg <- aggregate(data=Inv.stack.T, Presence ~ Sample + Group, FUN = "sum") #aggregate count data by species and survey
-Inv.stack.T.agg <- Inv.stack.T.agg[!Inv.stack.T.agg$Group %in% c("Nematodes","Turbellarians","Hydrozoans","Sponges"), ]
+#Inv.stack.T.agg <- Inv.stack.T.agg[!Inv.stack.T.agg$Group %in% c("Nematodes","Turbellarians","Hydrozoans","Sponges"), ]
 #Inv.fact.orig$Period <- substr(row.names(Inv.fact.orig), 4,6) #not needed now?
 Inv.stack.T.agg$Order <- Inv.fact.orig[match(Inv.stack.T.agg$Sample, row.names(Inv.fact.orig)), 4] #add in a variable for ordering the samples on the column plots- from the factor file.
 Inv.stack.T.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
 Inv.stack.T.agg < setorder(Inv.stack.T.agg, cols = "Grouporder") #order by taxonomic group
 Inv.stack.T.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
+```
+
+```{r}
 ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporder)) + 
   geom_bar(stat="identity", colour = "black") +
-  scale_fill_manual(values = c("#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","yellowgreen","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
+  scale_fill_manual(values = c("#FFD700","#FFA54F","#CDB38B","#FFAEB9","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","#FFFF00","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('sponges','hydrozoans','Turbellarians','Nematodes','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
   xlab("Sample") +
   ylab("Number of invertebrate species") + 
   theme(axis.text = element_text(size = 12)) + 
@@ -773,19 +737,24 @@ ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporde
 ```
 
 
+
+#Walbyring plots by sample
 ```{r fig.align = 'center'}
 # Aggregate data by taxonomic group and sample for just Lake Walbyring and produce a stacked column plot
 Inv.stack.W <- subset(Inv.stack, Wetland %in% c("W","S")) #create Toolibin only dataset
 Inv.stack.W.agg <- aggregate(data=Inv.stack.W, Presence ~ Sample + Group, FUN = "sum") #aggregate count data by species and survey
-Inv.stack.W.agg <- Inv.stack.W.agg[!Inv.stack.W.agg$Group %in% c("Nematodes","Turbellarians","Hydrozoans","Sponges"), ]
+#Inv.stack.W.agg <- Inv.stack.W.agg[!Inv.stack.W.agg$Group %in% c("Nematodes","Turbellarians","Hydrozoans","Sponges"), ]
 #Inv.fact.orig$Period <- substr(row.names(Inv.fact.orig), 4,6) #not needed now?
 Inv.stack.W.agg$Order <- Inv.fact.orig[match(Inv.stack.W.agg$Sample, row.names(Inv.fact.orig)), 4] #add in a variable for ordering the samples on the column plots- from the factor file.
 Inv.stack.W.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.W.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
-Inv.stack.W.agg < setorder(Inv.stack.W.agg, cols = "Grouporder") #order by taxonomic group
+Inv.stack.W.agg <- setorder(Inv.stack.W.agg, cols = "Grouporder") #order by taxonomic group
 Inv.stack.W.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.W.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
+```
+
+```{r}
 ggplot(Inv.stack.W.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporder)) + 
   geom_bar(stat="identity", colour = "black") +
-  scale_fill_manual(values = c("#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","yellowgreen","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
+  scale_fill_manual(values = c("#FFD700","#FFA54F","#CDB38B","#FFAEB9","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","#FFFF00","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('sponges','hydrozoans','Turbellarians','Nematodes','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) +
   xlab("Sample") +
   ylab("Number of invertebrate species") + 
   theme(axis.text = element_text(size = 12)) + 
@@ -797,19 +766,20 @@ ggplot(Inv.stack.W.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporde
 ```
 
 
-##Stacked invertebrate richness plots with samples grouped
+
+##Stacked invertebrate richness plots with samples grouped for each sampling period
 
 ##Load and format data
 ```{r}
 #create long file for aggregation in next chunks
-rawdata.IR.orig <- t(read.csv("./Newdata/Invert matrix for richness by period.csv", row.names = 1))
+rawdata.IR.orig <- t(read.csv("./Newdata/Invert matrix for richness by period2.csv", row.names = 1)) #load seperate datafile with occurrence lumped to sampling period and adjusted for larvae etc.
 rawdata.IR <- as.matrix(rawdata.IR.orig)
 Inv.stack <- as.data.frame(as.table(rawdata.IR))
 colnames(Inv.stack) <- c("Period", "Code", "Presence")
 Inv.stack$Wetland <- substr(Inv.stack$Period, 1, 1) #create new variable for wetland (Toolibin or Walbyring)
-#Inv.stack$Period <- substr(Inv.stack$Sample, 4,6) #create new variable for survey period
-#Inv.stack$Period <- gsub("^(?!N|O|J|D|A).*", "ref", Inv.stack$Period, perl = TRUE) #substitute ref in the Period column
 Inv.stack$Period <-gsub("[.]", "-", Inv.stack$Period) #convert dot in sample names to a dash for consistency between files (the dots are created on sample import).
+Inv.stack$Period <- substr(Inv.stack$Period, 3,5) #create new variable for survey period
+#Inv.stack$Period <- gsub("^(?!N|O|J|D|A).*", "ref", Inv.stack$Period, perl = TRUE) #substitute ref in the Period column
 Taxonomy3 <- read.csv("./Newdata/Taxonomy3.csv")
 colnames(Taxonomy3) <- c("Group", "Group.order", "Code", "LowestID")
 Inv.stack$Group <- Taxonomy3[match(Inv.stack$Code, Taxonomy3$Code), 1] #add invertebrate group to the data field to be used for stacking.
@@ -817,12 +787,12 @@ Inv.stack$Presence <- as.numeric(Inv.stack$Presence)
 Inv.fact.orig <- read.csv("./Newdata/Invert factors.csv", row.names = 1)
 ```
 
+#plot for Toolibin by group
 ```{r fig.align = 'center'}
 # Aggregate data by taxonomic group and sample for just Lake Toolibin and produce a stacked column plot
 Inv.stack.T.G <- subset(Inv.stack, Wetland %in% c("T")) #create Toolibin only dataset
 Inv.stack.T.G.agg <- aggregate(data=Inv.stack.T.G, Presence ~ Period + Group, FUN = "sum") #aggregate count data by species and survey
-Inv.stack.T.G.agg <- Inv.stack.T.G.agg[!Inv.stack.T.G.agg$Group %in% c("Nematodes","Turbellarians","Hydrozoans","Sponges"), ]
-Inv.stack.T.G.agg$Period <- substr(Inv.stack.T.G.agg$Period, 3, 5)
+#Inv.stack.T.G.agg <- Inv.stack.T.G.agg[!Inv.stack.T.G.agg$Group %in% c("Nematodes","Turbellarians","Hydrozoans","Sponges"), ]
 #Inv.fact.orig$Period <- substr(row.names(Inv.fact.orig), 4,6) #not needed now?
 Inv.stack.T.G.agg$Order <- Inv.fact.orig[match(Inv.stack.T.G.agg$Period, Inv.fact.orig$Survey), 4] #add in a variable for ordering the samples on the column plots- from the factor file.
 Inv.stack.T.G.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.G.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
@@ -833,7 +803,7 @@ Inv.stack.T.G.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.G.agg$Grou
 ```{r}
 ggplot(Inv.stack.T.G.agg, aes(x=reorder(Period, Order), y=Presence, fill=Grouporder)) + 
   geom_bar(stat="identity", colour = "black") +
-  scale_fill_manual(values = c("#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","yellowgreen","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
+  scale_fill_manual(values = c("#FFA54F","#CDB38B","#FFAEB9","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","#FFFF00","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('hydrozoans','Turbellarians','Nematodes','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
   xlab("Sample") +
   ylab("Number of invertebrate species") + 
   theme(axis.text = element_text(size = 12)) + 
@@ -844,29 +814,28 @@ ggplot(Inv.stack.T.G.agg, aes(x=reorder(Period, Order), y=Presence, fill=Groupor
 ```
 
 
-
-
-```{r fig.align = 'center'}
+#plot for Walbyring by group
+```{r}
 # Aggregate data by taxonomic group and sample for just Lake Toolibin and produce a stacked column plot
-Inv.stack.W <- subset(Inv.stack, Wetland %in% c("W","S")) #create Toolibin only dataset
-Inv.stack.W.agg <- aggregate(data=Inv.stack.W, Presence ~ Sample + Group, FUN = "sum") #aggregate count data by species and survey
-Inv.stack.W.agg <- Inv.stack.W.agg[!Inv.stack.W.agg$Group %in% c("Nematodes","Turbellarians","Hydrozoans","Sponges"), ]
+Inv.stack.W.G <- subset(Inv.stack, Wetland %in% c("W")) #create Toolibin only dataset
+Inv.stack.W.G.agg <- aggregate(data=Inv.stack.W.G, Presence ~ Period + Group, FUN = "sum") #aggregate count data by species and survey
+#Inv.stack.W.G.agg <- Inv.stack.W.G.agg[!Inv.stack.W.G.agg$Group %in% c("Nematodes","Turbellarians","Hydrozoans","Sponges"), ]
 #Inv.fact.orig$Period <- substr(row.names(Inv.fact.orig), 4,6) #not needed now?
-Inv.stack.W.agg$Order <- Inv.fact.orig[match(Inv.stack.W.agg$Sample, row.names(Inv.fact.orig)), 4] #add in a variable for ordering the samples on the column plots- from the factor file.
-Inv.stack.W.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.W.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
-Inv.stack.W.agg < setorder(Inv.stack.W.agg, cols = "Grouporder") #order by taxonomic group
-Inv.stack.W.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.W.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
-ggplot(Inv.stack.W.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporder)) + 
+Inv.stack.W.G.agg$Order <- Inv.fact.orig[match(Inv.stack.W.G.agg$Period, Inv.fact.orig$Survey), 4] #add in a variable for ordering the samples on the column plots- from the factor file.
+Inv.stack.W.G.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.W.G.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
+Inv.stack.W.G.agg <- setorder(Inv.stack.W.G.agg, cols = "Grouporder") #order by taxonomic group
+Inv.stack.W.G.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.W.G.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
+```
+
+```{r}
+ggplot(Inv.stack.W.G.agg, aes(x=reorder(Period, Order), y=Presence, fill=Grouporder)) + 
   geom_bar(stat="identity", colour = "black") +
-  scale_fill_manual(values = c("#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","yellowgreen","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
+  scale_fill_manual(values = c("#FFA54F","#CDB38B","#FFAEB9","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","#FFFF00","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('hydrozoans','Turbellarians','Nematodes','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) +  
   xlab("Sample") +
   ylab("Number of invertebrate species") + 
   theme(axis.text = element_text(size = 12)) + 
   theme(axis.title = element_text(size = 15)) +
   theme(axis.text.x=element_text(angle = -90, hjust = 0)) +
   theme(axis.title.y = element_text(vjust = +2.5)) +
-  theme(legend.title=element_blank()) +
-  geom_vline(xintercept = c(3.5, 6.5, 9.5, 12.5, 15.5), color = "black", linetype = "solid")
+  theme(legend.title=element_blank())
 ```
-
-
