@@ -457,7 +457,7 @@ summary(comdataRWA.Simper)
 
 ## Multivariate analysis of composition
 ```{r include=FALSE}
-rawdata.I.orig <- read.csv("./Newdata/Invert matrix for analyses.csv", row.names = 1)
+rawdata.I.orig <- read.csv("./Newdata/Invert matrix for analyses2.csv", row.names = 1)
 rawdata.I <- rawdata.I.orig[, 2:31] #use only Toolibin-Walbyring data (exclude SPS sites and species names)
 rawdata.I <- t(rawdata.I)
 row.names(rawdata.I) <- gsub("[.]", "-", row.names(rawdata.I))
@@ -516,11 +516,11 @@ ggplot(mds1.I.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + ge
 #+ geom_text(aes(label=Sample), size=2, vjust=1, hjust=1.3) #add labels if needed
 ```
 
-#ordination including six reference sites from Pinder, A.M., S.A. Halse, J.M. McRae, and R. J. Shiel. ‘Aquatic Invertebrate Assemblages of Wetlands and Rivers in the Wheatbelt Region of Western Australia’. Records of the Western Australian Museum Supplement 67 (2004): 7–37.
+#ordination including five reference sites from Pinder, A.M., S.A. Halse, J.M. McRae, and R. J. Shiel. ‘Aquatic Invertebrate Assemblages of Wetlands and Rivers in the Wheatbelt Region of Western Australia’. Records of the Western Australian Museum Supplement 67 (2004): 7–37.
 
 #create datasets
 ```{r include=FALSE}
-rawdata.I2 <- rawdata.I.orig[, 2:37] #remove species names
+rawdata.I2 <- rawdata.I.orig[, 2:36] #remove species names
 rawdata.I2 <- t(rawdata.I2)
 row.names(rawdata.I2) <- gsub("[.]", "-", row.names(rawdata.I2))
 Inv.fact.orig <- read.csv("./Newdata/Invert factors.csv", row.names = 1) #import site factor variables
@@ -555,7 +555,7 @@ ggplot(mds2.I.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + ge
 
 #re-run ordination without the April 2017 samples
 ```{r include=FALSE}
-rawdata.I3 <- rawdata.I.orig[, 2:37] #remove species names
+rawdata.I3 <- rawdata.I.orig[, 2:36] #remove species names
 rawdata.I3 <- rawdata.I3[, -grep("A17", colnames(rawdata.I3))] #exclude april 2017 columns
 rawdata.I3 <- t(rawdata.I3)
 row.names(rawdata.I3) <- gsub("[.]", "-", row.names(rawdata.I3))
@@ -596,7 +596,6 @@ mds3.I.pts$Col <- replace(mds3.I.pts$Col, mds3.I.pts$Col == "Walbyring", "blue")
 mds3.I.pts$Col <- replace(mds3.I.pts$Col, mds3.I.pts$Col == "Reference", "green")
 mds3.I.pts$Col <- as.factor(mds3.I.pts$Col)
 ```
-
 
 #ordination plot
 ```{r fig.align = 'center'}
@@ -694,7 +693,7 @@ plot(clusanal, xlab="Survey", ylab="Bray")
 ##Load and format data
 ```{r}
 #create long file for aggregation in next chunks
-rawdata.IR.orig <- t(read.csv("./Newdata/Invert matrix for richness3.csv", row.names = 1))
+rawdata.IR.orig <- t(read.csv("./Newdata/Invert matrix for richness4.csv", row.names = 1))
 rawdata.IR <- as.matrix(rawdata.IR.orig)
 Inv.stack <- as.data.frame(as.table(rawdata.IR))
 colnames(Inv.stack) <- c("Sample", "Code", "Presence")
