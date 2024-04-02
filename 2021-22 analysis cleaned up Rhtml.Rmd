@@ -31,6 +31,8 @@ set.seed(12345)
 
 # BACKGROUND
 
+Analyses below are for a report by Pinder et al.on 2021/22 data.
+
 Lake Toolibin filled in winter 2021 from rainfall in July/August. Surveys of waterbirds were undertaken across almost all of Lake Toolibin and the downstream Lake Walbyring on Nov 1 and 2 2021 (3 months after filling) and 10-11 Jan 2022 (4.5 months after filling) by boat or (for Jan 2022 at Walbyring) on foot by traversing the perimeter of the lake. Invertebrate surveys were undertaken at the same time using the methods of Cale and Pinder (2019).
 
 Cale and Pinder (2019) analysed patterns in waterbird composition from 1) the 1980s (Jaensch et al., 1985), a survey undertaken in 1996 by Halse <i>et al.</i> (2000) and two 2017 surveys following a summer fill event commencing 9 February 2017. They also analysed invertebrate data collected from both lakes in 1992 (Doupe and Horwitz, 1995), 1996 (Halse <i>et al.</i>, 2000) and 2017. This report extends the Cale and Pinder (2019) analyses of waterbirds and invertebrates to include the 2021/22
@@ -38,29 +40,33 @@ data.
 
 # WATERBIRD ANALYSES
 
-The waterbird data input files include depth at time of survey, visit date, period (1980s, 1996, 2017 and 2021/22), an indication (A = ALL_SPECIES) of whether the observers thought they had adequately surveyed the whole of the lake and seen all species (A), whether they were considered pre-salinity reference communities by Froend et al (FHS_Ref), whether they were used as 'comprehensive surveys in these analyses (All_Ref = Y), and species richness.
+The waterbird data input files include depth at time of survey, visit date, period (1980s, 1996, 2017 and 2021/22), an indication (A = ALL_SPECIES) of whether the observers thought they had adequately surveyed the whole of the lake and seen all species (A), whether they were considered pre-salinity reference communities by Froend et al (FHS_Ref), or as an expanded reference set of sites in these analysis, whether they were used as 'comprehensive surveys in these analyses (All_Ref = Y), and species richness.
 
 ```{r}
 rawdata <- read.csv("./Newdata/Allsurveys18 3.csv", row.names = 1) 
-rawdata$VISIT_DATE <- as.Date(rawdata$VISIT_DATE, "%d/%m/%Y") #convert waterbird survey date to R date format
 #retain 'rawdata' as an unmodified waterbird import
+rawdata$VISIT_DATE <- as.Date(rawdata$VISIT_DATE, "%d/%m/%Y") #convert waterbird survey d
 ```
 
 ## Graphs of richness by Period for Toolibin and Walbyring
 
-```{r}
+```{r  fig.align = 'center'}}
 rawdata3 <- rawdata
 rawdata3$wetland <- str_sub(row.names(rawdata3),1,1) #created new var for Toolibin or Walbyring from survey codes
+```
 
+```{r}
 #Toolibin scatterplot
-rawdata3.T <- filter(rawdata3, wetland == "T")
-rawdata3.T$colour <- rawdata3.T$All_Ref #new variable (colour) to indicate whether survey is considered reference (Y and N)
+rawdata3.T <- filter(rawdata3, wetland == "T") #extract just Toolibin data
+rawdata3.T$colour <- rawdata3.T$All_Ref #new variable (colour) to indicate whether survey is considered reference (Y and N) or is part of the 1996+ monitoring (M) surveys
 rawdata3.T$colour <- gsub('N', 'Blue', rawdata3.T$colour)
 rawdata3.T$colour <- gsub('Y', 'Red', rawdata3.T$colour)
 rawdata3.T$colour <- gsub('M', 'Black', rawdata3.T$colour)
-scat.col <- rawdata3.T$colour
-ggplot(data = rawdata3.T, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colour = colour, alpha = 0.2), size=8, width = 0.05, height = 0.05) + xlab("Period") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(legend.position="none") + scale_color_manual(values = c("Blue", "Grey", "Red"))
 
+ggplot(data = rawdata3.T, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colour = colour, alpha = 0.2), size=8, width = 0.05, height = 0.05) + xlab("Period") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(legend.position="none") + scale_color_manual(values = c("Blue", "Grey", "Red"))
+```
+
+```{r}
 #Walbyring scatterplot
 rawdata3.W <- filter(rawdata3, wetland == "W")
 rawdata3.W$colour <- rawdata3.W$All_Ref #new variable (colour) for depth and completeness of surveys
@@ -75,7 +81,7 @@ All multivariate analyses are performed on Helinger transformed abundance data (
 ```{r}
 comdata <- subset(rawdata, RICHNESS > 1)
 comdata <- comdata[!rownames(comdata) == "T1075", ]
-comdata.fact <- comdata[, 1:8] #create file with factors
+comdata.fact <- comdata[, 1:8] #add factorsfactors
 comdata.fact$Survey <- row.names(comdata.fact)
 comdata <- comdata[, -(1:8)] #remove factors from data file
 comdata[1:5, 1:5] #check first five lines & columns of data file
@@ -160,6 +166,7 @@ ggplot(mds6.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom
 ```
 
 ```{r eval = FALSE}
+#cluster analyses of Toolibin surveys
 plot(comdataRT.upgma <- hclust(vegdist(comdataRT.hel), method="aver"), hang=1)
 tabasco(comdataRT.hel,comdataRT.upgma)
 ```
@@ -167,10 +174,10 @@ tabasco(comdataRT.hel,comdataRT.upgma)
 ## Multivariate analyses with only Lake Walbyring data
 
 ```{r}
-comdataRW <- rawdata[rawdata$RICHNESS > 4, ]
+comdataRW <- rawdata[rawdata$RICHNESS > 4, ] #extract surveys with richness >4
 comdataRW[is.na(comdataRW)] <- 0 # replace na with 0
-comdataRW <- comdataRW[grep("^W", row.names(comdataRW)),] #extracts Toolibin
-comdataRW.fact <- comdataRW[, 1:8]
+comdataRW <- comdataRW[grep("^W", row.names(comdataRW)),] #extracts Walbyring
+comdataRW.fact <- comdataRW[, 1:8] #extracts factors as anew file
 comdataRW.fact$Survey <- row.names(comdataRW.fact)
 comdataRW.fact$YM <- format(as.Date(comdataRW.fact$VISIT_DATE), "%m-%y")
 comdataRW <- comdataRW[, -(1:8)] #remove factors from data file
@@ -206,6 +213,7 @@ Xmin <- min(mds6.pts$MDS1)*1.2
 Xmax <- max(mds6.pts$MDS1)*1.2
 Ymin <- min(mds6.pts$MDS2)*1.2
 Ymax <- max(mds6.pts$MDS2)*1.2
+
 ggplot(mds6.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period2), size=6, alpha=0.8) + coord_fixed(ratio = 1) + scale_color_manual(values = c("dodgerblue4", "deepskyblue2", "cadetblue1", "Grey","Red")) + labs(colour = "Period") 
 ```
 
@@ -281,7 +289,7 @@ comdataRTA.2$GT.char <- as.factor(comdataRTA.2$GT.char)
 comdataRTA.2$GT.char <- as.factor(comdataRTA.2$GT.char)
 ```
 
-```{r}
+```{r fig.align = 'center'}}
 max_y <- max(comdataRTA.2$Freckled.Duck)
 FD <- ggplot(comdataRTA.2, aes(x = Period, y = Freckled.Duck, alpha = 0.2, shape = factor(FD.char))) + 
   scale_shape_manual(values = c(1, 16)) +
@@ -404,7 +412,7 @@ comdataRTA.guilds.2$Period <- comdataRTA.guilds$Period[match(comdataRTA.guilds.2
 comdataRTA.guilds.2[, alphaprop := ifelse(comdataRTA.guilds.2$Period == "Reference", 0.4, 0.8)]
 ```
 
-```{r}
+```{r  fig.align = 'center'}}
 ggplot(comdataRTA.guilds.2, aes(x = Period, y = Richness, alpha = 0.4)) +
   geom_jitter(width = 0.1, height = 0.0, size=2, pch=16, colour="blue") + scale_x_discrete(limits = c("Reference", "1996-2022")) + theme(legend.position = "none") +
   scale_alpha_continuous(range = c(0.2, 0.8)) + facet_wrap(vars(Guild))
@@ -419,7 +427,7 @@ ggplot(comdataRTA.guilds.2, aes(Period, Richness)) +
 ```
 
 ## Heatmap of species abundances for Walbyring
-```{r}
+```{r  fig.align = 'center'}}
 comdataHMW <- rawdata[grep("^W", row.names(rawdata)),]
 comdataHMW <- comdataHMW[comdataHMW$RICHNESS >4, ]
 comdataHMW[is.na(comdataHMW)] <- 0 # replace na with 0
@@ -682,7 +690,7 @@ plot_ly(color = ~factor(wetland), colors = c("orange", "blue", "red"), showlegen
 ```
 
 ## cluster analyses by composition for 1996 to 2022 samples (excluding April 2017)
-```{r}
+```{r  fig.align = 'center'}}
 clusdist <- vegdist(rawdata.I3, method="bray")
 clusanal <- hclust(clusdist, method="average") 
 plot(clusanal, xlab="Survey", ylab="Bray")
@@ -723,7 +731,7 @@ Inv.stack.T.agg <- setorder(Inv.stack.T.agg, cols = "Grouporder") #order by taxo
 Inv.stack.T.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
 ```
 
-```{r}
+```{r  fig.align = 'center'}}
 ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporder)) + 
   geom_bar(stat="identity", colour = "black") +
   scale_fill_manual(values = c("#FFD700","#FFA54F","#CDB38B","#FFAEB9","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","#FFFF00","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('sponges','hydrozoans','Turbellarians','Nematodes','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
@@ -750,7 +758,7 @@ Inv.stack.W.agg <- setorder(Inv.stack.W.agg, cols = "Grouporder") #order by taxo
 Inv.stack.W.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.W.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
 ```
 
-```{r}
+```{r  fig.align = 'center'}}
 ggplot(Inv.stack.W.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporder)) + 
   geom_bar(stat="identity", colour = "black") +
   scale_fill_manual(values = c("#FFD700","#FFA54F","#CDB38B","#FFAEB9","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","#FFFF00","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('sponges','hydrozoans','Turbellarians','Nematodes','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) +
@@ -797,7 +805,7 @@ Inv.stack.T.G.agg <- setorder(Inv.stack.T.G.agg, cols = "Grouporder") #order by 
 Inv.stack.T.G.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.G.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
 ```
 
-```{r}
+```{r  fig.align = 'center'}}
 ggplot(Inv.stack.T.G.agg, aes(x=reorder(Period, Order), y=Presence, fill=Grouporder)) + 
   geom_bar(stat="identity", colour = "black") +
   scale_fill_manual(values = c("#FFA54F","#CDB38B","#FFAEB9","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","#FFFF00","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('hydrozoans','Turbellarians','Nematodes','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
@@ -823,7 +831,7 @@ Inv.stack.W.G.agg <- setorder(Inv.stack.W.G.agg, cols = "Grouporder") #order by 
 Inv.stack.W.G.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.W.G.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
 ```
 
-```{r}
+```{r  fig.align = 'center'}}
 ggplot(Inv.stack.W.G.agg, aes(x=reorder(Period, Order), y=Presence, fill=Grouporder)) + 
   geom_bar(stat="identity", colour = "black") +
   scale_fill_manual(values = c("#FFA54F","#CDB38B","#FFAEB9","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","#FFFF00","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('hydrozoans','Turbellarians','Nematodes','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) +  
