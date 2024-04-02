@@ -3,8 +3,6 @@ title: "EXPLORATORY ANALYSES OF TOOLIBIN AND WALBYRING WATERBIRD COUNTS and INVE
 author: "Adrian Pinder"
 date: 'Date and time: `r Sys.time()`'
 output:
-  pdf_document:
-    toc: yes
   html_document:
     toc: yes
     number_sections: yes
@@ -48,7 +46,7 @@ rawdata$VISIT_DATE <- as.Date(rawdata$VISIT_DATE, "%d/%m/%Y") #convert waterbird
 #retain 'rawdata' as an unmodified waterbird import
 ```
 
-##Graphs of richness by Period for Toolibin and Walbyring
+## Graphs of richness by Period for Toolibin and Walbyring
 
 ```{r}
 rawdata3 <- rawdata
@@ -69,7 +67,8 @@ rawdata3.W$colour <- rawdata3.W$All_Ref #new variable (colour) for depth and com
 ggplot(data = rawdata3.W, aes(x = Period, y = RICHNESS)) + geom_jitter(aes(colour = colour, alpha = 0.2), size=8, width = 0.05, height = 0.05) + xlab("Period") + ylab("Number of waterbird species") + theme(axis.title.x = element_text(margin=margin(t=20))) + theme(axis.title.y = element_text(margin=margin(r=20))) +theme(axis.text=element_text(size=10), axis.title=element_text(size=14,face="bold")) + theme(legend.position="none") + scale_color_manual(values = c("Blue", "Grey", "Red"))
 ```
 
-###Multivariate analyses including all surveys (from both lakes) 
+
+## Multivariate analyses including all surveys (from both lakes) 
 
 All multivariate analyses are performed on Helinger transformed abundance data (within species abundances scaled to values between 0 and 1 and square root transformed). Surveys with richness <=1 removed to deal with an outlier identified in the 2019 analyses. Also removed the 1975 survey as this was not quantitative.
 
@@ -89,7 +88,7 @@ comdata.hel<-decostand(comdata,"hellinger") # create helinger transformed matrix
 mds1 <- metaMDS(comdata.hel, distance ="bray", k=2) #nMDS in 2 dimensions
 ```
 
-This two-dimensional ordination had unacceptably high stress value (`r round(mds1$stress, digits=2)`) so a 3 dimensional ordination was run with stress `r round(mds2$stress, digits=2)`
+This two-dimensional ordination had unacceptably high stress value (`r round(mds1$stress, digits=2)`) so a 3 dimensional ordination was run.
 
 ```{r include=FALSE}
 mds2 <- metaMDS(comdata.hel, distance = "bray", k=3) #nMDS in 3 dimensions
@@ -113,7 +112,7 @@ Ymax <- max(mds2.pts$MDS2)*1.2
 ggplot(mds2.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + geom_point(aes(colour=Period2), size=5) + coord_fixed(ratio = 1)
 ```
 
-### Multivariate analyses with only Lake Toolibin data
+## Multivariate analyses with only Lake Toolibin data
 
 When just the Toolibin Surveys are considered, an ordination plot still shows the 1996 to 2022 surveys on the edge of the 1980s point cloud.
 
@@ -136,18 +135,18 @@ comdataRT.sqrt <- sqrt(comdataRT)
 ```
 
 ```{r include=FALSE}
-mds6<-metaMDS(comdataRW.hel, distance="bray", k=3) #nMDS in 3 dimensions
+mds6<-metaMDS(comdataRT.hel, distance="bray", k=3) #nMDS in 3 dimensions
 ```
 
 ```{r}
 #Extract mds points and add factors
   mds6.pts <- as.data.frame(mds6$points) #extract 2D ordination coordinates (points)
-  mds6.pts$Survey <- row.names(comdataRW.fact) #use survey period as row.names
-  mds6.pts$YM <- comdataRW.fact$YM #add YearMonth for labelling
-  mds6.pts$Period2 <- comdataRW.fact$Period2
-  mds6.pts$All_Ref <- comdataRW.fact$All_Ref
-  mds6.pts$Depth <- comdataRW.fact$DEPTH
-  mds6.pts$AvN <- comdataRW.fact$AvN
+  mds6.pts$Survey <- row.names(comdataRT.fact) #use survey period as row.names
+  mds6.pts$YM <- comdataRT.fact$YM #add YearMonth for labelling
+  mds6.pts$Period2 <- comdataRT.fact$Period2
+  mds6.pts$All_Ref <- comdataRT.fact$All_Ref
+  mds6.pts$Depth <- comdataRT.fact$DEPTH
+  mds6.pts$AvN <- comdataRT.fact$AvN
   #mds6.pts$Period <- comdataRT.fact[match(row.names(mds6.pts), row.names(comdataRT.fact)), 2]
   #mds6.pts$Depth <- comdataRT.fact[match(row.names(mds6.pts), row.names(comdataRT.fact)), 4]
 ```
@@ -165,7 +164,7 @@ plot(comdataRT.upgma <- hclust(vegdist(comdataRT.hel), method="aver"), hang=1)
 tabasco(comdataRT.hel,comdataRT.upgma)
 ```
 
-### Multivariate analyses with only Lake Walbyring data
+## Multivariate analyses with only Lake Walbyring data
 
 ```{r}
 comdataRW <- rawdata[rawdata$RICHNESS > 4, ]
@@ -215,7 +214,7 @@ plot(comdataRW.upgma <- hclust(vegdist(comdataRW.hel), method="aver"), hang=1)
 tabasco(comdataRW.hel,comdataRW.upgma)
 ```
 
-##Heatmap of species abundances by reference survey for Toolibin Lake
+## Heatmap of species abundances by reference survey for Toolibin Lake. Note the y axis is not sorting by date - need to fix.
 ```{r}
 comdataHM <- rawdata[rawdata$All_Ref %in% c("Y","M"), ] #selects reference surveys
 comdataHM<- comdataHM[!rownames(comdataHM) == "T1075", ] #removes 1975 presence absence data 
@@ -230,7 +229,7 @@ ggplot(melt_comdataHM.hel, aes(Var2, Var1)) + geom_tile(aes(fill = value), colou
   scale_fill_gradient(low = "lightblue", high = "red") + labs(x="Species",y="Survey") + theme(axis.text.y = element_text(colour = c("black", "black","black","black","black","black","black","black","black","black","black","blue", "blue", "blue", "blue", "blue", "blue", "blue")))
 ```
 
-##Simper analysis of just the reference surveys versus 1996+ surveys for Lake Toolibin
+## Simper analysis of just the reference surveys versus 1996+ surveys for Lake Toolibin
 ```{r}
 comdataRTA <- rawdata[rawdata$All_Ref %in% c("Y","M"), ]
 comdataRTA[is.na(comdataRTA)]<-0 # replace na with 0
@@ -248,7 +247,7 @@ comdataRTA.Simper <- simper(comdataRTA, comdataRTA.fact$All_Ref)
 summary(comdataRTA.Simper)
 ```
 
-##Plots of abundance for target species in the management plan.
+## Plots of abundance for target species in the management plan.
 ```{r}
 comdataRTA.2 <- as.data.table(comdataRTA)
 comdataRTA.2$Period <- comdataRTA.fact$Period2
@@ -370,6 +369,7 @@ GT <- ggplot(comdataRTA.2, aes(x = Period, y = Grey.Teal, alpha = 0.2, shape = f
 grid.arrange(FD, PD, AS, GT, EC, BS, ncol = 2, nrow = 3)
 ```
 
+## Scatterplots and boxplots of guild richness by guild
 
 ```{r}
 guilds <- read.csv("./Newdata/ToolibinGuilds.csv") #import Stuart Halse guild data
@@ -404,7 +404,6 @@ comdataRTA.guilds.2$Period <- comdataRTA.guilds$Period[match(comdataRTA.guilds.2
 comdataRTA.guilds.2[, alphaprop := ifelse(comdataRTA.guilds.2$Period == "Reference", 0.4, 0.8)]
 ```
 
-##Scatterplots and boxplots of guild richness by guild
 ```{r}
 ggplot(comdataRTA.guilds.2, aes(x = Period, y = Richness, alpha = 0.4)) +
   geom_jitter(width = 0.1, height = 0.0, size=2, pch=16, colour="blue") + scale_x_discrete(limits = c("Reference", "1996-2022")) + theme(legend.position = "none") +
@@ -419,7 +418,7 @@ ggplot(comdataRTA.guilds.2, aes(Period, Richness)) +
   facet_wrap(vars(Guild))
 ```
 
-##Heatmap of species abundances for Walbyring
+## Heatmap of species abundances for Walbyring
 ```{r}
 comdataHMW <- rawdata[grep("^W", row.names(rawdata)),]
 comdataHMW <- comdataHMW[comdataHMW$RICHNESS >4, ]
@@ -434,7 +433,7 @@ ggplot(melt_comdataHMW.hel, aes(Var2, Var1)) + geom_tile(aes(fill = value), colo
 ```
 
 
-##Simper analysis of just the reference surveys versus 1996+ surveys for Lake Walbyring
+## Simper analysis of just the reference surveys versus 1996+ surveys for Lake Walbyring
 ```{r}
 comdataRWA <- rawdata[rawdata$All_Ref %in% c("N","M"), ]
 comdataRWA <- comdataRWA[grep("^W", row.names(comdataRWA)),] #extracts Walbyring
@@ -452,8 +451,8 @@ comdataRWA.Simper <- simper(comdataRWA, comdataRWA.fact$All_Ref)
 summary(comdataRWA.Simper)
 ```
 
-# INVERTEBRATES
 
+# INVERTEBRATE ANALYSES
 
 ## Multivariate analysis of composition
 ```{r include=FALSE}
@@ -516,10 +515,11 @@ ggplot(mds1.I.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + ge
 #+ geom_text(aes(label=Sample), size=2, vjust=1, hjust=1.3) #add labels if needed
 ```
 
-#ordination including five reference sites from Pinder, A.M., S.A. Halse, J.M. McRae, and R. J. Shiel. ‘Aquatic Invertebrate Assemblages of Wetlands and Rivers in the Wheatbelt Region of Western Australia’. Records of the Western Australian Museum Supplement 67 (2004): 7–37.
+## Multivariate analyses including five reference sites from Pinder, A.M., S.A. Halse, J.M. McRae, and R. J. Shiel. ‘Aquatic Invertebrate Assemblages of Wetlands and Rivers in the Wheatbelt Region of Western Australia’. Records of the Western Australian Museum Supplement 67 (2004): 7–37.
 
-#create datasets
+
 ```{r include=FALSE}
+#create datasets
 rawdata.I2 <- rawdata.I.orig[, 2:36] #remove species names
 rawdata.I2 <- t(rawdata.I2)
 row.names(rawdata.I2) <- gsub("[.]", "-", row.names(rawdata.I2))
@@ -528,8 +528,8 @@ Inv.fact2 <- Inv.fact.orig
 #rawdata.I[is.na(rawdata.I)]<-0 # replace na with 0
 ```
 
-#ordination
 ```{r include=FALSE}
+#ordination
 mds2.I <- metaMDS(rawdata.I2, distance ="bray", k=2) #nMDS in 2 dimensions
 #Extract mds2 coordinates and create new dataframe with coordinates, survey, and survey period
 mds2.I.pts <- as.data.frame(mds2.I$points) #extract 2D ordination coordinates (points)
@@ -542,8 +542,8 @@ mds2.I.pts$Wetland <- as.factor(Inv.fact2[match(row.names(mds2.I.pts), row.names
 mds2.I.pts$Order <- as.factor(Inv.fact2[match(row.names(mds2.I.pts), row.names(Inv.fact2)), 4])
 ```
 
-#ordination plot
 ```{r fig.align = 'center'}
+#ordination plot
 #first set axis limits based on maximum values of coordinates
 Xmin <- min(mds2.I.pts$MDS1)*1.2 
 Xmax <- max(mds2.I.pts$MDS1)*1.2
@@ -553,8 +553,8 @@ ggplot(mds2.I.pts, aes(x=MDS1, y=MDS2)) + xlim(Xmin,Xmax) + ylim(Ymin,Ymax) + ge
 #+ geom_text(aes(label=Sample), size=2, vjust=1, hjust=1.3) #add labels if needed
 ```
 
-#re-run ordination without the April 2017 samples
 ```{r include=FALSE}
+#re-run ordination without the April 2017 samples
 rawdata.I3 <- rawdata.I.orig[, 2:36] #remove species names
 rawdata.I3 <- rawdata.I3[, -grep("A17", colnames(rawdata.I3))] #exclude april 2017 columns
 rawdata.I3 <- t(rawdata.I3)
@@ -564,8 +564,8 @@ Inv.fact3 <- Inv.fact.orig
 #rawdata.I[is.na(rawdata.I)]<-0 # replace na with 0
 ```
 
-#ordination
 ```{r include=FALSE}
+#ordination
 mds3.I <- metaMDS(rawdata.I3, distance ="bray", k=2) #nMDS in 2 dimensions
 #Extract mds2 coordinates and create new dataframe with coordinates, survey, and survey period
 mds3.I.pts <- as.data.frame(mds3.I$points) #extract 2D ordination coordinates (points)
@@ -578,8 +578,9 @@ mds3.I.pts$Wetland <- as.factor(Inv.fact2[match(row.names(mds3.I.pts), row.names
 mds3.I.pts$Order <- as.factor(Inv.fact2[match(row.names(mds3.I.pts), row.names(Inv.fact2)), 4])
 ```
 
-#stress of the above ordination is very high (best 0.19) so repeated as a 3D ordination
+
 ```{r include=FALSE}
+#stress of the above ordination is very high (best 0.19) so repeated as a 3D ordination
 mds3.I <- metaMDS(rawdata.I3, distance ="bray", k=3) #nMDS in 2 dimensions
 #Extract mds2 coordinates and create new dataframe with coordinates, survey, and survey period
 mds3.I.pts <- as.data.frame(mds3.I$points) #extract 2D ordination coordinates (points)
@@ -597,8 +598,8 @@ mds3.I.pts$Col <- replace(mds3.I.pts$Col, mds3.I.pts$Col == "Reference", "green"
 mds3.I.pts$Col <- as.factor(mds3.I.pts$Col)
 ```
 
-#ordination plot
 ```{r fig.align = 'center'}
+#ordination plot
 #first set axis limits based on maximum values of coordinates
 Xmin <- min(mds3.I.pts$MDS1)*1.2 
 Xmax <- max(mds3.I.pts$MDS1)*1.2
@@ -680,7 +681,7 @@ plot_ly(color = ~factor(wetland), colors = c("orange", "blue", "red"), showlegen
   )
 ```
 
-#cluster analyses by composition for 1996 to 2022 samples (excluding April 2017)
+## cluster analyses by composition for 1996 to 2022 samples (excluding April 2017)
 ```{r}
 clusdist <- vegdist(rawdata.I3, method="bray")
 clusanal <- hclust(clusdist, method="average") 
@@ -688,10 +689,10 @@ plot(clusanal, xlab="Survey", ylab="Bray")
 ```
 
 
-##Stacked invertebrate richness plots with samples seperate
+## Stacked invertebrate richness plots with samples seperate
 
-##Load and format data
 ```{r}
+#Load and format data
 #create long file for aggregation in next chunks
 rawdata.IR.orig <- t(read.csv("./Newdata/Invert matrix for richness4.csv", row.names = 1))
 rawdata.IR <- as.matrix(rawdata.IR.orig)
@@ -708,8 +709,9 @@ Inv.stack$Presence <- as.numeric(Inv.stack$Presence)
 Inv.fact.orig <- read.csv("./Newdata/Invert factors.csv", row.names = 1)
 ```
 
-#Tolibin plots by sample
+
 ```{r fig.align = 'center'}
+#Tolibin plots by sample
 # Aggregate data by taxonomic group and sample for just Lake Toolibin and produce a stacked column plot
 Inv.stack.T <- subset(Inv.stack, Wetland %in% c("T","S")) #create Toolibin only dataset
 Inv.stack.T.agg <- aggregate(data=Inv.stack.T, Presence ~ Sample + Group, FUN = "sum") #aggregate count data by species and survey
@@ -735,9 +737,7 @@ ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporde
     geom_vline(xintercept = c(3.5, 6.5, 9.5, 12.5, 15.5), color = "black", linetype = "solid")
 ```
 
-
-
-#Walbyring plots by sample
+## Walbyring plots by sample
 ```{r fig.align = 'center'}
 # Aggregate data by taxonomic group and sample for just Lake Walbyring and produce a stacked column plot
 Inv.stack.W <- subset(Inv.stack, Wetland %in% c("W","S")) #create Toolibin only dataset
@@ -764,12 +764,10 @@ ggplot(Inv.stack.W.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporde
   geom_vline(xintercept = c(3.5, 6.5, 9.5, 12.5, 15.5), color = "black", linetype = "solid")
 ```
 
+## Stacked invertebrate richness plots with samples grouped for each sampling period
 
-
-##Stacked invertebrate richness plots with samples grouped for each sampling period
-
-##Load and format data
 ```{r}
+#Load and format data
 #create long file for aggregation in next chunks
 rawdata.IR.orig <- t(read.csv("./Newdata/Invert matrix for richness by period2.csv", row.names = 1)) #load seperate datafile with occurrence lumped to sampling period and adjusted for larvae etc.
 rawdata.IR <- as.matrix(rawdata.IR.orig)
@@ -786,8 +784,8 @@ Inv.stack$Presence <- as.numeric(Inv.stack$Presence)
 Inv.fact.orig <- read.csv("./Newdata/Invert factors.csv", row.names = 1)
 ```
 
-#plot for Toolibin by group
 ```{r fig.align = 'center'}
+#plot for Toolibin by group
 # Aggregate data by taxonomic group and sample for just Lake Toolibin and produce a stacked column plot
 Inv.stack.T.G <- subset(Inv.stack, Wetland %in% c("T")) #create Toolibin only dataset
 Inv.stack.T.G.agg <- aggregate(data=Inv.stack.T.G, Presence ~ Period + Group, FUN = "sum") #aggregate count data by species and survey
@@ -812,9 +810,8 @@ ggplot(Inv.stack.T.G.agg, aes(x=reorder(Period, Order), y=Presence, fill=Groupor
   theme(legend.title=element_blank())
 ```
 
-
-#plot for Walbyring by group
 ```{r}
+#plot for Walbyring by group
 # Aggregate data by taxonomic group and sample for just Lake Toolibin and produce a stacked column plot
 Inv.stack.W.G <- subset(Inv.stack, Wetland %in% c("W")) #create Toolibin only dataset
 Inv.stack.W.G.agg <- aggregate(data=Inv.stack.W.G, Presence ~ Period + Group, FUN = "sum") #aggregate count data by species and survey
