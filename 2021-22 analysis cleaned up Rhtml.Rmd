@@ -717,7 +717,7 @@ Inv.stack.T.agg <- aggregate(data=Inv.stack.T, Presence ~ Sample + Group, FUN = 
 #Inv.fact.orig$Period <- substr(row.names(Inv.fact.orig), 4,6) #not needed now?
 Inv.stack.T.agg$Order <- Inv.fact.orig[match(Inv.stack.T.agg$Sample, row.names(Inv.fact.orig)), 4] #add in a variable for ordering the samples on the column plots- from the factor file.
 Inv.stack.T.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
-Inv.stack.T.agg < setorder(Inv.stack.T.agg, cols = "Grouporder") #order by taxonomic group
+Inv.stack.T.agg <- setorder(Inv.stack.T.agg, cols = "Grouporder") #order by taxonomic group
 Inv.stack.T.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
 ```
 
