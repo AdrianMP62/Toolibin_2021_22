@@ -13,6 +13,8 @@ editor_options:
     wrap: 72
 ---
 
+
+
 ```{r, echo=FALSE, include = FALSE}
 packages <- c("gridExtra","dendextend","bibliometrix","data.table","mtcars","dplyr","scatterplot3d","plotly","RColorBrewer","stringr","rstudioapi","patchwork","glue","ClassDiscovery","vegan","tidyverse","lubridate","ggplot2","ggpubr","stringi","factoextra", "zoo","cluster","rgl","reshape2","ggthemes","data.table")
 lapply(packages, require, character.only=TRUE)
