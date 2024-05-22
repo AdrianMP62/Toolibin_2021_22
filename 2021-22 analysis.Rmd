@@ -25,6 +25,7 @@ knitr::opts_chunk$set(echo = FALSE)
 knitr::opts_chunk$set(message = FALSE)
 knitr::opts_chunk$set(warning = FALSE)
 knitr::opts_chunk$set(error = TRUE)
+knitr::opts_chunk$set(fig.align = 'center')
 options(scipen=999)
 set.seed(12345)
 ```
@@ -50,7 +51,7 @@ rawdata$VISIT_DATE <- as.Date(rawdata$VISIT_DATE, "%d/%m/%Y") #convert waterbird
 
 ## Graphs of richness by Period for Toolibin and Walbyring
 
-```{r  fig.align = 'center'}}
+```{r}
 rawdata3 <- rawdata
 rawdata3$wetland <- str_sub(row.names(rawdata3),1,1) #created new var for Toolibin or Walbyring from survey codes
 ```
@@ -109,7 +110,7 @@ mds2.pts$Period2 <- comdata.fact[match(mds2.pts$Survey, comdata.fact$Survey), 3]
 
 Below is a plot of axes 1 v 2 of the 3D ordination, showing all of the 1996 to 2022 surveys on the edge of the 1975 and 1980s surveys.
 
-```{r fig.align = 'center'}
+```{r}
 #first set axis limits based on maximum values of coordinates
 Xmin <- min(mds2.pts$MDS1)*1.2 
 Xmax <- max(mds2.pts$MDS1)*1.2
@@ -157,7 +158,7 @@ mds6<-metaMDS(comdataRT.hel, distance="bray", k=3) #nMDS in 3 dimensions
   #mds6.pts$Depth <- comdataRT.fact[match(row.names(mds6.pts), row.names(comdataRT.fact)), 4]
 ```
 
-```{r fig.align = 'center'}
+```{r}
 Xmin <- min(mds6.pts$MDS1)*1.2
 Xmax <- max(mds6.pts$MDS1)*1.2
 Ymin <- min(mds6.pts$MDS2)*1.2
@@ -208,7 +209,7 @@ Axes 1 v 2 of a 3D ordination with stress
 `r round(mds6$stress, digits=3)` showing the 1 x 1996, 2 x 2017 and 2 x
 2021-22 surveys on the edge of the 1980s surveys.
 
-```{r fig.align = 'center'}
+```{r}
 Xmin <- min(mds6.pts$MDS1)*1.2
 Xmax <- max(mds6.pts$MDS1)*1.2
 Ymin <- min(mds6.pts$MDS2)*1.2
@@ -289,7 +290,7 @@ comdataRTA.2$GT.char <- as.factor(comdataRTA.2$GT.char)
 comdataRTA.2$GT.char <- as.factor(comdataRTA.2$GT.char)
 ```
 
-```{r fig.align = 'center'}}
+```{r fig.align = 'center'}
 max_y <- max(comdataRTA.2$Freckled.Duck)
 FD <- ggplot(comdataRTA.2, aes(x = Period, y = Freckled.Duck, alpha = 0.2, shape = factor(FD.char))) + 
   scale_shape_manual(values = c(1, 16)) +
@@ -412,7 +413,7 @@ comdataRTA.guilds.2$Period <- comdataRTA.guilds$Period[match(comdataRTA.guilds.2
 comdataRTA.guilds.2[, alphaprop := ifelse(comdataRTA.guilds.2$Period == "Reference", 0.4, 0.8)]
 ```
 
-```{r  fig.align = 'center'}}
+```{r}
 ggplot(comdataRTA.guilds.2, aes(x = Period, y = Richness, alpha = 0.4)) +
   geom_point(size=6, pch=16, colour="blue", alpha = ifelse(comdataRTA.guilds.2$Period == "Reference", 0.25, 0.5)) + scale_x_discrete(limits = c("Reference", "1996-2022")) + theme(legend.position = "none") +
   scale_alpha_continuous(range = c(0.2, 0.8)) + facet_wrap(vars(Guild))
@@ -427,7 +428,7 @@ ggplot(comdataRTA.guilds.2, aes(Period, Richness)) +
 ```
 
 ## Heatmap of species abundances for Walbyring
-```{r  fig.align = 'center'}}
+```{r}
 comdataHMW <- rawdata[grep("^W", row.names(rawdata)),]
 comdataHMW <- comdataHMW[comdataHMW$RICHNESS >4, ]
 comdataHMW[is.na(comdataHMW)] <- 0 # replace na with 0
@@ -577,7 +578,7 @@ In three of the five sampling periods the Walbyring samples group
 somewhat separate to the Toolibin samples, but for Apr 2017 and November
 2021 this is not the case.
 
-```{r fig.align = 'center'}
+```{r}
 #first set axis limits based on maximum values of coordinates
 Xmin <- min(mds1.I.pts$MDS1)*1.2 
 Xmax <- max(mds1.I.pts$MDS1)*1.2
@@ -758,7 +759,7 @@ ggplot(mds3.I.pts, aes(x=MDS1, y=MDS2, colour = Wetland, shape = Survey)) + xlim
 <!-- ``` -->
 
 ## cluster analyses by composition for 1996 to 2022 samples (excluding April 2017)
-```{r  fig.align = 'center'}}
+```{r  fig.align = 'center'}
 clusdist <- vegdist(rawdata.I3, method="bray")
 clusanal <- hclust(clusdist, method="average") 
 plot(clusanal, xlab="Survey", ylab="Bray")
@@ -799,7 +800,7 @@ Inv.stack.T.agg <- setorder(Inv.stack.T.agg, cols = "Grouporder") #order by taxo
 Inv.stack.T.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
 ```
 
-```{r  fig.align = 'center'}}
+```{r  fig.align = 'center'}
 ggplot(Inv.stack.T.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporder)) + 
   geom_bar(stat="identity", colour = "black") +
   scale_fill_manual(values = c("#FFD700","#FFA54F","#CDB38B","#FFAEB9","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","#FFFF00","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('sponges','hydrozoans','Turbellarians','Nematodes','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
@@ -826,7 +827,7 @@ Inv.stack.W.agg <- setorder(Inv.stack.W.agg, cols = "Grouporder") #order by taxo
 Inv.stack.W.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.W.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
 ```
 
-```{r  fig.align = 'center'}}
+```{r  fig.align = 'center'}
 ggplot(Inv.stack.W.agg, aes(x=reorder(Sample, Order), y=Presence, fill=Grouporder)) + 
   geom_bar(stat="identity", colour = "black") +
   scale_fill_manual(values = c("#FFD700","#FFA54F","#CDB38B","#FFAEB9","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","#FFFF00","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('sponges','hydrozoans','Turbellarians','Nematodes','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) +
@@ -873,7 +874,7 @@ Inv.stack.T.G.agg <- setorder(Inv.stack.T.G.agg, cols = "Grouporder") #order by 
 Inv.stack.T.G.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.T.G.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
 ```
 
-```{r  fig.align = 'center'}}
+```{r  fig.align = 'center'}
 ggplot(Inv.stack.T.G.agg, aes(x=reorder(Period, Order), y=Presence, fill=Grouporder)) + 
   geom_bar(stat="identity", colour = "black") +
   scale_fill_manual(values = c("#FFA54F","#CDB38B","#FFAEB9","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","#FFFF00","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('hydrozoans','Turbellarians','Nematodes','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) + 
@@ -899,7 +900,7 @@ Inv.stack.W.G.agg <- setorder(Inv.stack.W.G.agg, cols = "Grouporder") #order by 
 Inv.stack.W.G.agg$Grouporder <- as.factor(Taxonomy3[match(Inv.stack.W.G.agg$Group, Taxonomy3$Group), 2]) #add in a variable for ordering the samples on the column plots- from the factor file.
 ```
 
-```{r  fig.align = 'center'}}
+```{r  fig.align = 'center'}
 ggplot(Inv.stack.W.G.agg, aes(x=reorder(Period, Order), y=Presence, fill=Grouporder)) + 
   geom_bar(stat="identity", colour = "black") +
   scale_fill_manual(values = c("#FFA54F","#CDB38B","#FFAEB9","#FFF68F","lavender","white","plum2","#BCEE68","#66CD00","darkcyan","#FFFF00","#7FFFD4","#9AC0CD","#79CDCD","#00FFFF","#98F5FF","deepskyblue2"), labels = c('hydrozoans','Turbellarians','Nematodes','snails','leeches','oligochaetes','water mites','cladocerans','ostracods','copepods','amphipods','beetles','dipterans','hemipterans','lepiodpterans','dragonflies+damselflies','caddisflies')) +  
