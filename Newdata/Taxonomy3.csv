@@ -1,0 +1,262 @@
+Group,Group order,Code,Species
+Sponges,1,IA019999,Spongillidae
+Hydrozoans,2,IB010199,Hydra sp.
+Turbellarians,3,IF999999,Turbellaria
+Turbellarians,3,IF9999A0,Microturbellaria
+Nematodes,4,II999999,Nematoda
+Snails,6,KG060101,Ferrissia petterdi
+Snails,6,KG070304,Isidorella cf. bradshawi
+Snails,6,KG070399,Isidorella sp.
+Snails,6,KG070899,Bayardella sp.
+Snails,6,KG079999,Planorbidae
+Snails,6,KG120199,Hydrococcus sp.
+Leeches,7,LH019999,Glossiphoniidae
+Oligochaetes,8,LO049999,Naididae (ex Tubificidae)
+Oligochaetes,8,LO050201,Dero digitata
+Oligochaetes,8,LO050202,Dero nivea
+Oligochaetes,8,LO050701,Chaetogaster diastrophus
+Oligochaetes,8,LO0511A0,Bratislavia WA1 (SAP)
+Oligochaetes,8,LO051201,Tubifex tubifex
+Oligochaetes,8,LO052101,Ainudrilus nharna
+Oligochaetes,8,LO052199,Ainudrilus sp.
+Oligochaetes,8,LO989999,Opisthopora
+Water mites,9,MM0101A0,Hydrachna nr. approximata (SAP)
+Water mites,9,MM020101,Limnochares australica
+Water mites,9,MM030199,Eylais sp.
+Water mites,9,MM070199,Hydrodroma sp.
+Water mites,9,MM120101,Limnesia dentifera
+Water mites,9,MM1602A8,Koenikea nr australica (=verrucosa)
+Water mites,9,MM170101,Acercella falcipes
+Water mites,9,MM170302,Piona cumberlandensis
+Water mites,9,MM230101,Arrenurus (Arrenurus) balladoniensis
+Water mites,9,MM259999,Pezidae
+Water mites,9,MM9999A1,Oribatida sp.
+Water mites,9,MM9999A2,Mesostigmata
+Water mites,9,MM9999A6,Trombidioidea
+Cladocerans,10,OG030212,Alona rigidicaudis
+Cladocerans,10,OG0302B0,Alona n. sp.? (nr. affinis) (SAP)
+Cladocerans,10,OG0308A0,Celsinotum cf. hypsilophum (CB)
+Cladocerans,10,OG031201,Dunhevedia crassa
+Cladocerans,10,OG031601,Kurzia latissima
+Cladocerans,10,OG0317A2,Leberis cf. diaphanus vermiculata (SAP)
+Cladocerans,10,OG0317A6,Leberis diaphanus
+Cladocerans,10,OG031802,Leydigia australis
+Cladocerans,10,OG0318A4,Leydigia nr laevis
+Cladocerans,10,OG032501,Pleuroxus foveatus
+Cladocerans,10,OG032502,Pleuroxus inermis
+Cladocerans,10,OG0325A1,Pleuroxus cf. inermis (SAP)
+Cladocerans,10,OG033401,Armatalona macrocopa
+Cladocerans,10,OG034101,Flavalona setigera
+Cladocerans,10,OG040199,Ceriodaphnia sp.
+Cladocerans,10,OG0401A0,Ceriodaphnia cf. dubia (CB)
+Cladocerans,10,OG0401A6,Ceriodaphnia n. sp. c (Berner sp.#1) (SAP)
+Cladocerans,10,OG040201,Daphnia carinata s.l.
+Cladocerans,10,OG040202,Daphnia cephalata
+Cladocerans,10,OG040214,Daphnia queenslandensis
+Cladocerans,10,OG040299,Daphnia sp.
+Cladocerans,10,OG0402A1,Daphnia cf. cephalata
+Cladocerans,10,OG040504,Simocephalus vetulus
+Cladocerans,10,OG040505,Simocephalus elizabethae
+Cladocerans,10,OG040506,Simocephalus gibbosus
+Cladocerans,10,OG040507,Simocephalus victoriensis
+Cladocerans,10,OG040599,Simocephalus sp.
+Cladocerans,10,OG060201,Macrothrix breviseta
+Cladocerans,10,OG0602B1,Macrothrix cf. flagellata (SAP)
+Cladocerans,10,OG0602B6,Macrothrix cf. indistincta
+Cladocerans,10,OG0602C5,Macrothrix cf. capensis
+Cladocerans,10,OG070101,Moina australiensis
+Cladocerans,10,OG070199,Moina sp.
+Cladocerans,10,OG0701A1,Moina cf. micrura (SAP)
+Ostracods,11,OH010203,Limnocythere mowbrayensis
+Ostracods,11,OH060101,Ilyocypris australiensis
+Ostracods,11,OH080101,Alboa worooa
+Ostracods,11,OH080302,Bennelongia barangaroo lineage
+Ostracods,11,OH080311,Bennelongia (cygnus lineage) frumenta
+Ostracods,11,OH080316,Bennelongia (australis lineage) gwelupensis
+Ostracods,11,OH080399,Bennelongia sp.
+Ostracods,11,OH0803B9,Bennelongia australis lineage
+Ostracods,11,OH080403,Candonocypris novaezelandiae
+Ostracods,11,OH080501,Cypretta baylyi
+Ostracods,11,OH080599,Cypretta sp.
+Ostracods,11,OH0805A0,Cypretta sp. 527 (SAP)
+Ostracods,11,OH080602,Cyprinotus cingalensis (ex edwardi)
+Ostracods,11,OH080604,Cyprinotus cingalensis
+Ostracods,11,OH080703,Diacypris spinosa
+Ostracods,11,OH080799,Diacypris sp.
+Ostracods,11,OH081099,Heterocypris sp.
+Ostracods,11,OH081201,Mytilocypris ambiguosa
+Ostracods,11,OH081204,Mytilocypris mytiloides
+Ostracods,11,OH081299,Mytilocypris sp.
+Ostracods,11,OH081901,Ilyodromus amplicolis
+Ostracods,11,OH082101,Cypricercus salinus
+Ostracods,11,OH0821A0,Cypricercus sp. 442 (CB)
+Ostracods,11,OH082601,Platycypris baueri
+Ostracods,11,OH090101,Sarscypridopsis aculeata
+Copepods,12,OJ110101,Boeckella triarticulata s.l.
+Copepods,12,OJ110199,Boeckella sp.
+Copepods,12,OJ110202,Calamoecia ampulla
+Copepods,12,OJ110299,Calamoecia sp.
+Copepods,12,OJ1102A1,Calamoecia sp. 342
+Copepods,12,OJ3101A4,Microcyclops sp. 368
+Copepods,12,OJ310301,Australocyclops australis
+Copepods,12,OJ310701,Mesocyclops australiensis
+Copepods,12,OJ310703,Mesocyclops brooksi
+Copepods,12,OJ311001,Eucyclops australiensis
+Copepods,12,OJ3111A0,Paracyclops ?chiltoni (SAP)
+Copepods,12,OJ311201,Apocyclops dengizicus
+Copepods,12,OJ3120A0,Pescecyclops sp. 442=462=465=CB2 (salinarum in Morton)
+Copepods,12,OJ3120A2,Pescecyclops sp. 434 (Stuart's original arnaudi sensu Sars)
+Copepods,12,OJ610302,Mesochra baylyi
+Copepods,12,OJ6103A1,Mesochra nr flava
+Copepods,12,OJ6199A0,Canthocamptidae sp. 1 (SAP)
+Copepods,12,OJ6199A4,Australocamptus sp. 5 (SAP)
+Copepods,12,OJ6401A6,Nitokra sp. 5 (nr reducta) (SAP)
+Amphipods,13,OP020102,Austrochiltonia subtenuis
+Crayfish,15,OV010113,Cherax preissii
+Beetles,15,QC060104,Haliplus fuscatus
+Beetles,15,QC060105,Haliplus gibbus
+Beetles,15,QC060199,Haliplus sp.
+Beetles,15,QC090399,Hydrovatus sp.
+Beetles,15,QC090401,Hyphydrus elegans
+Beetles,15,QC090499,Hyphydrus sp.
+Beetles,15,QC090701,Gibbidessus pictipes
+Beetles,15,QC091002,Limbodessus shuckhardi
+Beetles,15,QC091006,Limbodessus inornatus
+Beetles,15,QC091101,Allodessus bistrigatus
+Beetles,15,QC091603,Antiporus gilberti
+Beetles,15,QC091699,Antiporus sp.
+Beetles,15,QC091805,Sternopriscus multimaculatus
+Beetles,15,QC091899,Sternopriscus sp.
+Beetles,15,QC092001,Necterosoma penicillatus
+Beetles,15,QC092099,Necterosoma sp.
+Beetles,15,QC092103,Megaporus howittii
+Beetles,15,QC092107,Megaporus solidus
+Beetles,15,QC092199,Megaporus sp.
+Beetles,15,QC092301,Rhantus suturalis
+Beetles,15,QC092399,Rhantus sp.
+Beetles,15,QC092401,Lancetes lanceolatus
+Beetles,15,QC092802,Hyderodes crassus
+Beetles,15,QC092899,Hyderodes sp.
+Beetles,15,QC092901,Eretes australis
+Beetles,15,QC093401,Onychohydrus scutellaris
+Beetles,15,QC093499,Onychohydrus sp.
+Beetles,15,QC0999A6,Bidessini sp.
+Beetles,15,QC110401,Berosus australiae
+Beetles,15,QC110409,Berosus discolor
+Beetles,15,QC110416,Berosus macumbensis
+Beetles,15,QC110418,Berosus munitipennis
+Beetles,15,QC110421,Berosus nutans
+Beetles,15,QC110499,Berosus sp.
+Beetles,15,QC111101,Enochrus elongatulus
+Beetles,15,QC111102,Enochrus eyrensis
+Beetles,15,QC111103,Enochrus maculiceps
+Beetles,15,QC111199,Enochrus sp.
+Beetles,15,QC111699,Paracymus sp.
+Beetles,15,QC119999,Hydrophilidae
+Beetles,15,QC130101,Hydraena luridipennis
+Beetles,15,QC189999,Staphylinidae
+Beetles,15,QC209999,Scirtidae
+Dipterans,16,QD019999,Tipulidae
+Dipterans,16,QD0199A0,Tipulidae type A (SAP)
+Dipterans,16,QD070101,Anopheles annulipes s.l.
+Dipterans,16,QD070199,Anopheles sp.
+Dipterans,16,QD0701A3,Anopheles (Cellia) sp.
+Dipterans,16,QD070502,Aedes camptorhynchus
+Dipterans,16,QD070706,Culex (Culex) australicus
+Dipterans,16,QD070709,Culex (Culex) annulirostris
+Dipterans,16,QD070799,Culex sp.
+Dipterans,16,QD090499,Bezzia sp.
+Dipterans,16,QD0904A0,Bezzia sp. 2 (SAP)
+Dipterans,16,QD090899,Culicoides sp.
+Dipterans,16,QD091999,Monohelea sp.
+Dipterans,16,QD0919A0,Monohelea sp. 1 (SAP)
+Dipterans,16,QD092099,Nilobezzia sp.
+Dipterans,16,QD0920A0,Nilobezzia sp. 1 (SAP)
+Dipterans,16,QD0920A1,Nilobezzia sp. 2 (SAP)
+Dipterans,16,QD092799,Atrichopogon sp.
+Dipterans,16,QD0927A0,Atrichopogon sp. 2 (SAP)
+Dipterans,16,QD092899,Forcipomyia sp. 1
+Dipterans,16,QD099999,Ceratopogonidae
+Dipterans,16,QD0999B1,Forcypomyinae
+Dipterans,16,QD129999,Psychodidae
+Dipterans,16,QD1299A1,Psychodinae sp. 2 (SAP)
+Dipterans,16,QD1299A2,Psychodinae sp. 3 (SAP)
+Dipterans,16,QD239999,Tabanidae
+Dipterans,16,QD249999,Stratiomyidae
+Dipterans,16,QD369999,Dolichopodidae
+Dipterans,16,QD439999,Syrphidae
+Dipterans,16,QD789999,Ephydridae
+Dipterans,16,QD7899A5,Ephydridae sp. 1 (SAP)
+Dipterans,16,QD7899A6,Ephydridae sp. 2 (SAP)
+Dipterans,16,QD7899A7,Ephydridae sp. 3 (SAP)
+Dipterans,16,QD8999A7,Muscidae sp. H (SAP)
+Dipterans,16,QDAE0803,Procladius paludicola
+Dipterans,16,QDAE0804,Procladius villosimanus
+Dipterans,16,QDAE1102,Ablabesmyia notabilis
+Dipterans,16,QDAE11A2,Ablabesmyia aff notabilis
+Dipterans,16,QDAE1201,Paramerina levidensis
+Dipterans,16,QDAF1202,Paralimnophyes pullulus (V42)
+Dipterans,16,QDAF1501,Cricotopus albitarsus
+Dipterans,16,QDAF19A0,Compterosmittia? sp. A (SAP)
+Dipterans,16,QDAF2801,Limnophyes vestitus (V41)
+Dipterans,16,QDAH04B9,Tanytarsus nr bispinosus (SAP)
+Dipterans,16,QDAH04D8,Tanytarsus fuscithorax/semibarbitarsus
+Dipterans,16,QDAI0408,Chironomus occidentalis
+Dipterans,16,QDAI0414,Chironomus tepperi
+Dipterans,16,QDAI04A0,Chironomus aff. alternans (V24) (CB)
+Dipterans,16,QDAI0603,Dicrotendipes conjunctus
+Dipterans,16,QDAI0606,Dicrotendipes jobetus
+Dipterans,16,QDAI0611,Dicrotendipes pseudoconjunctus
+Dipterans,16,QDAI06A0,Dicrotendipes sp. A (V47) (SAP)
+Dipterans,16,QDAI06A4,Dicrotendipes 'CA1' wheatbelt (was  lindae) (SAP)
+Dipterans,16,QDAI0701,Kiefferulus intertinctus
+Dipterans,16,QDAI0703,Kiefferulus martini
+Dipterans,16,QDAI0804,Polypedilum nubifer
+Dipterans,16,QDAI0810,Polypedilum watsoni
+Dipterans,16,QDAI1901,Cryptochironomus griseidorsum
+Dipterans,16,QDAI2201,Cladopelma curtivalva
+Dipterans,16,QDAI2599,Parachironomus sp.
+Dipterans,16,QDAI25A0,Parachironomus sp. 1 (VSCL35) (SAP)
+Hemipterans,17,QH520199,Mesovelia sp.
+Hemipterans,17,QH560101,Microvelia (Pacificovelia) oceanica
+Hemipterans,17,QH560199,Microvelia sp.
+Hemipterans,17,QH569999,Veliidae
+Hemipterans,17,QH650199,Diaprepocoris sp.
+Hemipterans,17,QH650204,Sigara truncatipala
+Hemipterans,17,QH650206,Sigara mullaka
+Hemipterans,17,QH650299,Sigara sp.
+Hemipterans,17,QH650301,Agraptocorixa eurynome
+Hemipterans,17,QH650302,Agraptocorixa parvipunctata
+Hemipterans,17,QH650303,Agraptocorixa hirtifrons
+Hemipterans,17,QH650399,Agraptocorixa sp.
+Hemipterans,17,QH650502,Micronecta robusta
+Hemipterans,17,QH650503,Micronecta gracilis
+Hemipterans,17,QH650599,Micronecta sp.
+Hemipterans,17,QH670401,Anisops thienemanni
+Hemipterans,17,QH670402,Anisops hyperion
+Hemipterans,17,QH670403,Anisops gratus
+Hemipterans,17,QH670405,Anisops hackeri
+Hemipterans,17,QH670426,Anisops stali
+Hemipterans,17,QH670499,Anisops sp.
+Hemipterans,17,QH679999,Notonectidae
+Lepidopterans,18,QL019999,Pyralidae
+Lepidopterans,18,QL0199A0,Pyralidae nr. sp. 39/40 of JHH (SAP)
+Dragnonflies+Damselflies,19,QO020501,Austroagrion cyane (=coeruleum)
+Dragnonflies+Damselflies,19,QO021301,Xanthagrion erythroneurum
+Dragnonflies+Damselflies,19,QO029999,Coenagrionidae
+Dragnonflies+Damselflies,19,QO050101,Austrolestes analis
+Dragnonflies+Damselflies,19,QO050102,Austrolestes annulosus
+Dragnonflies+Damselflies,19,QO050103,Austrolestes aridus
+Dragnonflies+Damselflies,19,QO050105,Austrolestes io
+Dragnonflies+Damselflies,19,QO121204,Anax papuensis
+Dragnonflies+Damselflies,19,QO129999,Aeshnidae
+Dragnonflies+Damselflies,19,QO170701,Diplacodes bipunctata
+Dragnonflies+Damselflies,19,QO171601,Orthetrum caledonicum
+Dragnonflies+Damselflies,19,QO300102,Hemicordulia tau
+Dragnonflies+Damselflies,19,QO300199,Hemicordulia sp.
+Dragnonflies+Damselflies,19,QO309999,Hemicorduliidae
+Caddisflies,20,QT080499,Ecnomus sp.
+Caddisflies,20,QT250504,Notalina spira
+Caddisflies,20,QT250799,Oecetis sp.
+Caddisflies,20,QT251103,Triplectides australis
+Caddisflies,20,QT259999,Leptoceridae
